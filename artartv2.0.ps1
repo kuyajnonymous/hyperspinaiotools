@@ -1,0 +1,1434 @@
+# Load necessary assemblies for Windows Forms and WPF
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName WindowsFormsIntegration  # Needed for integrating WPF controls into Windows Forms
+
+# Define base location for dynamic paths
+$hyperspinlocation = "C:\retrocade"  # Ensure this path is correct
+
+# Create the main form
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Game Selector"
+$form.Size = New-Object System.Drawing.Size(500, 450)  # Increased height for new label section
+$form.StartPosition = "CenterScreen"
+
+# Create a text box for the game folder
+$folderTextBox = New-Object System.Windows.Forms.TextBox
+$folderTextBox.Location = New-Object System.Drawing.Point(10, 12)
+$folderTextBox.Size = New-Object System.Drawing.Size(240, 25)
+$form.Controls.Add($folderTextBox)
+
+# Create a button to browse for the game folder
+$browseButton = New-Object System.Windows.Forms.Button
+$browseButton.Text = "Browse"
+$browseButton.Location = New-Object System.Drawing.Point(255, 10)
+$browseButton.Size = New-Object System.Drawing.Size(75, 23)
+$form.Controls.Add($browseButton)
+
+# Create a dropdown for selected game
+$selectedGameDropdown = New-Object System.Windows.Forms.ComboBox
+$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 40)
+$selectedGameDropdown.Size = New-Object System.Drawing.Size(325, 21)
+$form.Controls.Add($selectedGameDropdown)
+
+# Create the clickable box on the right of the TextBox and ComboBox rows
+$addBox = New-Object System.Windows.Forms.Button
+$addBox.Text = "ADD"
+$addBox.Location = New-Object System.Drawing.Point(340, 10)  # Right of the TextBox and Button
+$addBox.Size = New-Object System.Drawing.Size(70, 50)
+$form.Controls.Add($addBox)
+
+
+# Create boxes for logo, wheel, and video
+$logoBox = New-Object System.Windows.Forms.GroupBox
+$logoBox.Text = "Logo"
+$logoBox.Location = New-Object System.Drawing.Point(10, 70)
+$logoBox.Size = New-Object System.Drawing.Size(145, 210)
+$form.Controls.Add($logoBox)
+
+$wheelBox = New-Object System.Windows.Forms.GroupBox
+$wheelBox.Text = "Wheel"
+$wheelBox.Location = New-Object System.Drawing.Point(160, 70)
+$wheelBox.Size = New-Object System.Drawing.Size(250, 75)
+$form.Controls.Add($wheelBox)
+
+# Create the Video GroupBox (unchanged)
+$videoBox = New-Object System.Windows.Forms.GroupBox
+$videoBox.Text = "Video"
+$videoBox.Location = New-Object System.Drawing.Point(160, 150)
+$videoBox.Size = New-Object System.Drawing.Size(250, 130)
+$form.Controls.Add($videoBox)
+
+# Initial Image paths for logo and wheel
+$logoimg = "C:\retrocade\layouts\NXL HD\Logo.png"
+$wheelimg = "C:\retrocade\layouts\NXL HD\Wheel.png"
+$unknownMediaImg = "C:\retrocade\layouts\NXL HD\unknownmedia.png"  # Path for the fallback image
+
+# Create PictureBox for the logo
+$logoPictureBox = New-Object System.Windows.Forms.PictureBox
+$logoPictureBox.Image = [System.Drawing.Image]::FromFile($logoimg)
+$logoPictureBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+$logoPictureBox.Dock = "Fill"
+$logoBox.Controls.Add($logoPictureBox)
+
+# Create PictureBox for the wheel
+$wheelPictureBox = New-Object System.Windows.Forms.PictureBox
+$wheelPictureBox.Image = [System.Drawing.Image]::FromFile($wheelimg)
+$wheelPictureBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+$wheelPictureBox.Dock = "Fill"
+$wheelBox.Controls.Add($wheelPictureBox)
+
+# Create PictureBox for the video
+$vidfile = "C:\retrocade\layouts\NXL HD\snap.mp4"
+$mediaElement = New-Object System.Windows.Controls.MediaElement
+$mediaElement.Width = 250
+$mediaElement.Height = 130
+$mediaElement.Stretch = [System.Windows.Media.Stretch]::Fill
+$mediaElement.Source = $vidfile
+$wpfHost = New-Object System.Windows.Forms.Integration.ElementHost
+$wpfHost.Dock = "Fill"
+$wpfHost.Child = $mediaElement
+$videoBox.Controls.Add($wpfHost)
+
+# Create labels for Game and Emulator
+$gameLabel = New-Object System.Windows.Forms.Label
+$gameLabel.Text = "Game:"
+$gameLabel.Location = New-Object System.Drawing.Point(10, 240)  # Adjusted position to fit below other components
+$gameLabel.Size = New-Object System.Drawing.Size(200, 20)
+$form.Controls.Add($gameLabel)
+
+$emulatorLabel = New-Object System.Windows.Forms.Label
+$emulatorLabel.Text = "Emulator:"
+$emulatorLabel.Location = New-Object System.Drawing.Point(10, 265)  # Adjusted position to fit below
+$emulatorLabel.Size = New-Object System.Drawing.Size(200, 20)
+$form.Controls.Add($emulatorLabel)
+
+# Labels for the bottom of the form (Romlist, CFG, RocketLauncher, Artworks)
+$romlistLabel = New-Object System.Windows.Forms.Label
+$romlistLabel.Text = "Romlist"
+$romlistLabel.Location = New-Object System.Drawing.Point(10, 290)
+$romlistLabel.Size = New-Object System.Drawing.Size(100, 20)
+$form.Controls.Add($romlistLabel)
+
+$cfgLabel = New-Object System.Windows.Forms.Label
+$cfgLabel.Text = "CFG"
+$cfgLabel.Location = New-Object System.Drawing.Point(120, 290)
+$cfgLabel.Size = New-Object System.Drawing.Size(100, 20)
+$form.Controls.Add($cfgLabel)
+
+$rocketLauncherLabel = New-Object System.Windows.Forms.Label
+$rocketLauncherLabel.Text = "RocketLauncher"
+$rocketLauncherLabel.Location = New-Object System.Drawing.Point(230, 290)
+$rocketLauncherLabel.Size = New-Object System.Drawing.Size(100, 20)
+$form.Controls.Add($rocketLauncherLabel)
+
+# Artworks label, starts as gray
+$artworksLabel = New-Object System.Windows.Forms.Label
+$artworksLabel.Text = "Artworks"
+$artworksLabel.Location = New-Object System.Drawing.Point(340, 290)
+$artworksLabel.Size = New-Object System.Drawing.Size(100, 20)
+$artworksLabel.ForeColor = [System.Drawing.Color]::Gray  # Default color
+$form.Controls.Add($artworksLabel)
+
+# Global variables to store media paths and existence flags
+$global:logoPath = $null
+$global:wheelPath = $null
+$global:videoPath = $null
+$global:logoExists = $false
+$global:wheelExists = $false
+$global:videoExists = $false
+
+
+
+
+
+
+
+
+
+
+
+# Function to browse for folder
+$browseButton.Add_Click({
+    $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+    if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        $folderTextBox.Text = $folderBrowser.SelectedPath
+        $emulator = [System.IO.Path]::GetFileName($folderBrowser.SelectedPath)
+        
+        # Clear existing items in the dropdown
+        $selectedGameDropdown.Items.Clear()
+        
+        # Get directories in the selected folder
+        $directories = Get-ChildItem -Path $folderBrowser.SelectedPath -Directory
+        foreach ($dir in $directories) {
+            $selectedGameDropdown.Items.Add($dir.Name)
+        }
+
+        # Show a default prompt if no games are found
+        if ($selectedGameDropdown.Items.Count -eq 0) {
+            $selectedGameDropdown.Items.Add("No games found in selected folder.")
+        }
+    }
+})
+
+# Declare global variables outside the event handler
+$global:selectedGame = ""
+$global:selectedGameFolder = ""
+$global:emulatorFolder = ""
+$global:emulator = ""
+$global:logoPath = ""
+$global:wheelPath = ""
+$global:videoPath = ""
+$global:logoExists = $false
+$global:wheelExists = $false
+$global:videoExists = $false
+$global:cfgfile = ""
+$global:emulatorTextPath = ""
+$global:PCGamesIni = ""
+
+$selectedGameDropdown.Add_SelectedIndexChanged({
+    if ($selectedGameDropdown.SelectedItem) {
+        # Assign the selected game and update the label
+        $global:selectedGame = $selectedGameDropdown.SelectedItem
+        $gameLabel.Text = "Game: $global:selectedGame"
+
+        # Get the full path of the selected game's folder
+        $global:selectedGameFolder = Join-Path -Path $folderTextBox.Text -ChildPath $global:selectedGame
+        Write-Host "Full path for selected game: $global:selectedGameFolder"
+
+        # Get the parent folder (i.e., the emulator folder)
+        $global:emulatorFolder = [System.IO.Directory]::GetParent($global:selectedGameFolder).FullName
+        $global:emulator = [System.IO.Path]::GetFileName($global:emulatorFolder)
+
+        # Update the emulator label
+        $emulatorLabel.Text = "Emulator: $global:emulator"
+
+        # Dynamically create media paths for logo, wheel, and video
+        $global:logoPath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\logo\$global:selectedGame.png"
+        $global:wheelPath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\wheel\$global:selectedGame.png"
+        $global:videoPath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\videos\$global:selectedGame.mp4"
+
+        # Show available artworks first (before checking $Emulator.txt)
+        $global:logoExists = Test-Path $global:logoPath
+        $global:wheelExists = Test-Path $global:wheelPath
+        $global:videoExists = Test-Path $global:videoPath
+
+        if ($global:logoExists) {
+            $logoPictureBox.Image = [System.Drawing.Image]::FromFile($global:logoPath)
+        } else {
+            Write-Host "Logo not found at $global:logoPath"
+            $logoPictureBox.Image = [System.Drawing.Image]::FromFile($logoimg)
+        }
+
+        if ($global:wheelExists) {
+            $wheelPictureBox.Image = [System.Drawing.Image]::FromFile($global:wheelPath)
+        } else {
+            Write-Host "Wheel not found at $global:wheelPath"
+            $wheelPictureBox.Image = [System.Drawing.Image]::FromFile($wheelimg)
+        }
+
+        if ($global:videoExists) {
+            try {
+                $mediaElement.Source = $global:videoPath
+            }
+            catch {
+                Write-Host "Video could not be played at $global:videoPath, displaying fallback image"
+                $mediaElement.Source = $unknownMediaImg  # Display fallback image
+                $artworksLabel.ForeColor = [System.Drawing.Color]::Red  # Mark as missing
+            }
+        } else {
+            Write-Host "Video not found at $global:videoPath"
+            $defaultVideoPath = "C:\retrocade\layouts\NXL HD\default.mp4"
+            $mediaElement.Source = $defaultVideoPath
+        }
+
+        # Check the artwork status
+        if ($global:logoExists -and $global:wheelExists -and $global:videoExists) {
+            $artworksLabel.ForeColor = [System.Drawing.Color]::Green  # All artwork found
+        } else {
+            $artworksLabel.ForeColor = [System.Drawing.Color]::Red  # Some artwork missing
+        }
+
+        # Check if the .cfg file exists
+        $global:cfgfile = Join-Path -Path $hyperspinlocation -ChildPath "romlists\All Systems\$global:selectedGame.cfg"
+        if (Test-Path $global:cfgfile) {
+            $cfgLabel.ForeColor = [System.Drawing.Color]::Green  # Green if .cfg file exists
+        } else {
+            $cfgLabel.ForeColor = [System.Drawing.Color]::Red  # Red if .cfg file does not exist
+
+         
+            }
+        
+		
+		
+		
+
+        # Dynamically determine the correct emulator.txt path based on emulator
+        $global:emulatorTextPath = Join-Path -Path $hyperspinlocation -ChildPath "romlists\$global:emulator\$global:emulator.txt"
+
+        if ($global:emulator -eq "PC Games") {
+            # Check for the default PC Games.txt path
+            $global:emulatorTextPath = "$hyperspinlocation\romlists\PC Games.txt"
+        }
+
+        if (Test-Path $global:emulatorTextPath) {
+            Write-Host "Checking $global:emulatorTextPath for game entry with emulator: $global:emulator"
+            $sectionExists = $false
+            $emulatorTextLines = Get-Content $global:emulatorTextPath
+            foreach ($line in $emulatorTextLines) {
+                if ($line -match ".*;$global:emulator(;|$)") {
+                    Write-Host "Found entry with emulator: $global:emulator"  # Log if entry is found
+                    $sectionExists = $true
+                    break
+                }
+            }
+
+            if (-not $sectionExists) {
+                Write-Host "Not Found: Emulator $global:emulator not associated with any game in $global:emulatorTextPath"  # Log if entry is not found
+            }
+
+            if ($sectionExists) {
+                $romlistLabel.ForeColor = [System.Drawing.Color]::Green  # Green if section exists
+            } else {
+                $romlistLabel.ForeColor = [System.Drawing.Color]::Red  # Red if section does not exist
+            }
+        } else {
+            Write-Host "$global:emulatorTextPath not found."
+        }
+
+        # RocketLauncher logic (specific to PC Games emulator)
+        if ($global:emulator -eq "PC Games") {
+            $global:PCGamesIni = Join-Path -Path $hyperspinlocation -ChildPath "RocketLauncher\Modules\PCLauncher\PC Games.ini"
+
+            if (Test-Path $global:PCGamesIni) {
+                $sectionExists = Select-String -Pattern "^\[$global:selectedGame\]" -Path $global:PCGamesIni
+
+                if ($sectionExists) {
+                    Write-Host "Section [$global:selectedGame] found in $global:PCGamesIni"
+                    $rocketLauncherLabel.ForeColor = [System.Drawing.Color]::Green  # Section exists
+                } else {
+                    Write-Host "Section [$global:selectedGame] not found in $global:PCGamesIni"
+                    $rocketLauncherLabel.ForeColor = [System.Drawing.Color]::Red  # Section missing
+                }
+            } else {
+                Write-Host "File $global:PCGamesIni does not exist"
+                $rocketLauncherLabel.ForeColor = [System.Drawing.Color]::Red  # INI file missing
+            }
+        }
+    }
+})
+
+
+
+
+# Global variables to store selected exe name and full path
+$global:exenamefullpath = ""
+$global:exename = ""
+
+# Debug log to console for Add button click
+$addBox.Add_Click({
+    Write-Host "ADD button clicked."
+    
+    # Ensure the selected game folder, emulator, and selected game are populated
+    if (-not $selectedGameFolder) {
+        Write-Host "No selected game folder found."
+        [System.Windows.Forms.MessageBox]::Show("No selected game folder found.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK)
+        return
+    }
+
+    if (-not $emulator) {
+        Write-Host "No emulator selected."
+        [System.Windows.Forms.MessageBox]::Show("No emulator selected.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK)
+        return
+    }
+
+    if (-not $selectedGame) {
+        Write-Host "No selected game found."
+        [System.Windows.Forms.MessageBox]::Show("No selected game found.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK)
+        return
+    }
+
+    Write-Host "hyperspinlocation: $hyperspinlocation"
+    Write-Host "selectedGameFolder: $selectedGameFolder"
+    Write-Host "emulator: $emulator"
+    Write-Host "selectedgame: $selectedGame"
+
+    # Build the path to search for .exe files in the selected game folder
+    $searchPath = $selectedGameFolder
+    Write-Host "Generated path to search for .exe files: $searchPath"
+
+    if (Test-Path $searchPath) {
+        Write-Host "Path exists: $searchPath"
+    } else {
+        Write-Host "Path does not exist: $searchPath"
+        [System.Windows.Forms.MessageBox]::Show("Path does not exist.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK)
+        return
+    }
+
+    # Search for .exe files
+    $exeFiles = Get-ChildItem -Path $searchPath -Recurse -Filter "*.exe" -File
+    Write-Host "Found $($exeFiles.Count) .exe files."
+
+    if ($exeFiles.Count -gt 0) {
+        # Create the form
+        $form = New-Object System.Windows.Forms.Form
+        $form.Text = "Select Executable"
+        $form.Size = New-Object System.Drawing.Size(350, 350)
+
+        # Create the ListBox
+        $exeListBox = New-Object System.Windows.Forms.ListBox
+        $exeListBox.Location = New-Object System.Drawing.Point(20, 20)
+        $exeListBox.Size = New-Object System.Drawing.Size(300, 150)
+
+        foreach ($exe in $exeFiles) {
+            $exeListBox.Items.Add($exe.FullName)  # Add full path to ListBox
+            Write-Host "Added .exe to ListBox: $($exe.FullName)"
+        }
+
+        # Add ListBox to form
+        $form.Controls.Add($exeListBox)
+
+        # Create OK Button
+        $okButton = New-Object System.Windows.Forms.Button
+        $okButton.Text = "OK"
+        $okButton.Location = New-Object System.Drawing.Point(20, 200)
+        $okButton.Size = New-Object System.Drawing.Size(75, 30)
+        $form.Controls.Add($okButton)
+
+        # Create Cancel Button
+        $cancelButton = New-Object System.Windows.Forms.Button
+        $cancelButton.Text = "Cancel"
+        $cancelButton.Location = New-Object System.Drawing.Point(110, 200)
+        $cancelButton.Size = New-Object System.Drawing.Size(75, 30)
+        $form.Controls.Add($cancelButton)
+
+        # Event handler for OK button click
+        $okButton.Add_Click({
+            if ($exeListBox.SelectedItem) {
+                $global:exenamefullpath = $exeListBox.SelectedItem  # Full path of selected .exe
+                $global:exename = [System.IO.Path]::GetFileName($exeListBox.SelectedItem)  # Only the file name (exe)
+                
+                Write-Host "Selected EXE Full Path: $global:exenamefullpath"
+                Write-Host "Selected EXE Name: $global:exename"
+                
+                [System.Windows.Forms.MessageBox]::Show("Selected EXE: $global:exename", "EXE Selected", [System.Windows.Forms.MessageBoxButtons]::OK)
+				
+# Create the batch file content
+$batFileContent = @"
+@echo off
+setlocal
+set "GAMENAME_URL=$global:foldername.url"
+set "GAMENAME_EXE=$global:exename"
+set "GAMEPATH=$global:exenamefullpath"
+set "LOGFILE=$global:gamelog"
+set HOME="%~dp0"
+set "GAMEROOT=%~dp0%GAMEPATH%"
+set "GAMEDRIVE=$global:driveLetter"
+
+rem Clear previous log or create a new one
+echo Script execution started. > "%LOGFILE%"
+
+rem Check if the URL file exists on the user's desktop
+if exist "%USERPROFILE%\Desktop\%GAMENAME_URL%" (
+    echo Found %GAMENAME_URL% on Desktop. >> "%LOGFILE%"
+    echo Running %GAMENAME_URL% from Desktop...
+    start "" /WAIT "%USERPROFILE%\Desktop\%GAMENAME_URL%"
+    echo Successfully executed %GAMENAME_URL% from Desktop. >> "%LOGFILE%"
+) else (
+    rem Check if the URL file exists in the specified game path
+    if exist "%GAMEPATH%" (
+        echo Found %GAMENAME_EXE%. >> "%LOGFILE%"
+        echo Running %GAMENAME_EXE%...
+        start "" /WAIT "%GAMEPATH%"
+        echo Successfully executed %GAMENAME_EXE%. >> "%LOGFILE%"
+    ) else (
+        echo %GAMENAME_URL% not found. Proceeding to run the EXE file. >> "%LOGFILE%"
+        echo Running %GAMENAME_EXE%...
+        start "" /WAIT "%GAMEPATH%"
+        echo Successfully executed %GAMENAME_EXE%. >> "%LOGFILE%"
+    )
+)
+
+echo Script execution finished. >> "%LOGFILE%"
+echo Logs written to %LOGFILE%.
+exit
+"@
+
+# Determine the path for the batch file
+$batchFilePath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
+#$batFilePath = Join-Path -Path $global:selectedGameFolder -ChildPath "$global:selectedGame.bat"
+$batFilePath = $batchFilePath
+
+# Create or overwrite the .bat file
+$batFileContent | Set-Content -Path $batFilePath -Force
+
+# Display the file creation in console
+Write-Host "Batch file created at: $batFilePath"
+Write-Host "Batch file content: $batFileContent"
+
+# Initialize default values
+$game_genre = "Arcade"
+$platform = "$global:emulator"
+$release_year = "1984"
+
+# Define the file paths
+$allSystemsFilePath = Join-Path -Path $hyperspinlocation -ChildPath "romlists\All Systems.txt"
+$emulatorFilePath = Join-Path -Path $hyperspinlocation -ChildPath "romlists\$global:emulator.txt"
+
+# Define the pattern to search for
+$pattern = [regex]::Escape("$global:selectedGame") + ";.*;$global:emulator"
+
+# Function to check and add entry if not found
+function Add-GameEntryIfNeeded {
+    param (
+        [string]$filePath
+    )
+
+    if (Test-Path $filePath) {
+        # Read the content of the file
+        $fileContent = Get-Content $filePath
+
+        # Check if the pattern exists
+        $existingEntry = $fileContent | Where-Object { $_ -match $pattern }
+
+        if (-not $existingEntry) {
+            # If the entry doesn't exist, add a new one
+            $entry = "$global:selectedGame;$global:selectedGame;$global:emulator;$release_year;$platform;$game_genre;;;;;0;;;;;;;;;"
+            Add-Content -Path $filePath -Value $entry
+            Write-Host "Added new entry to $($filePath): $entry"
+        } else {
+            Write-Host "Entry already exists in $($filePath)."
+        }
+    } else {
+        Write-Host "File not found: $filePath"
+    }
+}
+
+# Check both All Systems.txt and Emulator-specific txt files
+Add-GameEntryIfNeeded -filePath $allSystemsFilePath
+Add-GameEntryIfNeeded -filePath $emulatorFilePath
+
+				
+				
+				
+				
+	# Assuming $global:selectedGame, $global:exename, $global:exenamefullpath, $global:foldername are set
+$PCGamesIni = $global:PCGamesIni
+
+# Check if the section [$global:selectedGame] already exists
+$sectionExists = Select-String -Pattern "^\[$global:selectedGame\]" -Path $PCGamesIni
+
+if ($sectionExists) {
+    Write-Host "Section [$global:selectedGame] already exists in $PCGamesIni. Updating..."
+
+    # Read the content of the INI file
+    $iniContent = Get-Content -Path $PCGamesIni
+
+    # Locate the section
+    $startIndex = $iniContent.IndexOf("[$global:selectedGame]")
+    if ($startIndex -ne -1) {
+        # Find where the section ends
+        $endIndex = ($iniContent[$startIndex..($iniContent.Count - 1)] | Select-String -Pattern "^\[" -SimpleMatch -List).LineNumber - 2
+        if (-not $endIndex) { $endIndex = $iniContent.Count - 1 } # If it's the last section, endIndex is the last line
+
+        # Replace the first few lines in the section (you can adjust this based on your exact structure)
+        $iniContent[$startIndex + 1] = "Application=$global:exenamefullpath"
+        $iniContent[$startIndex + 2] = "AppWaitExe=$global:exename"
+        $iniContent[$startIndex + 3] = "ExitMethod=Process Close AppWaitExe"
+        $iniContent[$startIndex + 4] = "PostLaunchSleep=120000"
+        $iniContent[$startIndex + 5] = "FadeTitleWaitTillActive=false"
+        $iniContent[$startIndex + 6] = "FadeTitleTimeout=120000"
+        $iniContent[$startIndex + 7] = "HideConsole=true"
+    }
+
+    # Write updated content back to the file
+    $iniContent | Set-Content -Path $PCGamesIni -Encoding UTF8
+    Write-Host "Updated Application and AppWaitExe for $global:selectedGame in $PCGamesIni"
+} else {
+    Write-Host "Section [$global:selectedGame] does not exist in $PCGamesIni. Appending..."
+
+    # If section does not exist, append the new section to the INI file
+    $newSection = @"
+[$global:selectedGame]
+Application=$global:exenamefullpath
+AppWaitExe=$global:exename
+ExitMethod=Process Close AppWaitExe
+PostLaunchSleep=120000
+FadeTitleWaitTillActive=false
+FadeTitleTimeout=120000
+HideConsole=true
+"@
+
+    # Append the section to the PC Games.ini file
+    Add-Content -Path $PCGamesIni -Value $newSection
+    Write-Host "Appended INI section for $global:selectedGame to $PCGamesIni"
+}
+			
+				
+				
+				
+				
+				
+				
+				        # Check if the .cfg file exists
+        $global:cfgfile = Join-Path -Path $hyperspinlocation -ChildPath "romlists\All Systems\$global:selectedGame.cfg"
+        if (Test-Path $global:cfgfile) {
+            $cfgLabel.ForeColor = [System.Drawing.Color]::Green  # Green if .cfg file exists
+        } else {
+            $cfgLabel.ForeColor = [System.Drawing.Color]::Red  # Red if .cfg file does not exist
+
+            # If the emulator is "PC Games", create the .cfg file with the specified content
+            if ($global:emulator -eq "PC Games") {
+                $cfgContent = @"
+executable           RocketLauncher\RocketLauncher.exe
+args                 -s "[emulator]" -r "[name]" -p AttractMode -f "..\HyperSpin Attraction.exe"
+"@
+                Set-Content -Path $global:cfgfile -Value $cfgContent
+                Write-Host "Created .cfg file at $global:cfgfile"
+                $cfgLabel.ForeColor = [System.Drawing.Color]::Green  # Update label to green after creation
+            }
+        }
+                $form.Close()  # Close the form after selection
+            } else {
+                [System.Windows.Forms.MessageBox]::Show("No EXE selected. Please select an EXE file.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK)
+            }
+        })
+
+        # Event handler for Cancel button click
+        $cancelButton.Add_Click({
+            Write-Host "Operation canceled."
+            $form.Close()  # Close the form without selecting any EXE
+        })
+
+        # Show the form
+        $form.ShowDialog()
+    } else {
+        Write-Host "No .exe files found."
+        [System.Windows.Forms.MessageBox]::Show("No EXE files found!", "Search Result", [System.Windows.Forms.MessageBoxButtons]::OK)
+    }
+})
+
+
+
+
+
+
+# Add Click event handlers for the logo PictureBox
+$logoPictureBox.Add_Click({
+    # Create a new form for logo image URL or path input
+    $logoForm = New-Object System.Windows.Forms.Form
+    $logoForm.Text = "Update Logo Image"
+    $logoForm.Size = New-Object System.Drawing.Size(500, 200)
+    $logoForm.StartPosition = "CenterScreen"
+
+    # Create a text box for URL or path input
+    $textBoxLogo = New-Object System.Windows.Forms.TextBox
+    $textBoxLogo.Location = New-Object System.Drawing.Point(10, 20)
+    $textBoxLogo.Size = New-Object System.Drawing.Size(460, 20)
+    $logoForm.Controls.Add($textBoxLogo)
+
+    # Create an Update button
+    $buttonUpdate = New-Object System.Windows.Forms.Button
+    $buttonUpdate.Text = "Update"
+    $buttonUpdate.Location = New-Object System.Drawing.Point(10, 60)
+    $buttonUpdate.Size = New-Object System.Drawing.Size(100, 30)
+    $logoForm.Controls.Add($buttonUpdate)
+
+    # Create a Scrap button
+    $buttonScrap = New-Object System.Windows.Forms.Button
+    $buttonScrap.Text = "Scrap"
+    $buttonScrap.Location = New-Object System.Drawing.Point(120, 60)
+    $buttonScrap.Size = New-Object System.Drawing.Size(100, 30)
+    $logoForm.Controls.Add($buttonScrap)
+
+    # Create a Back button
+    $buttonBack = New-Object System.Windows.Forms.Button
+    $buttonBack.Text = "Back"
+    $buttonBack.Location = New-Object System.Drawing.Point(230, 60)
+    $buttonBack.Size = New-Object System.Drawing.Size(100, 30)
+    $logoForm.Controls.Add($buttonBack)
+
+    # Define the Scrap button functionality
+ 
+
+
+
+# Define the Scrap logo button functionality
+
+
+
+
+
+
+
+
+
+
+
+
+
+$buttonScrap.Add_Click({
+    # Validate API key
+    $apiKey = "03c3bdbbc7922e3e4c25936f4c4e7dcb"
+    if (-not $apiKey) {
+        [System.Windows.Forms.MessageBox]::Show("Please provide a valid SteamGridDB API key.", "API Key Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        return
+    }
+
+    # Get the selected game
+    $selectedGame = $selectedGameDropdown.SelectedItem
+    if (-not $selectedGame) {
+        [System.Windows.Forms.MessageBox]::Show("Please select a game from the dropdown.", "Game Not Selected", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+        return
+    }
+
+    # Function to fetch images and update the FlowLayoutPanel
+    function UpdateResults {
+        param ($searchQuery, $flowPanel, $previewBox)
+
+        # Clear existing controls
+        $flowPanel.Controls.Clear()
+
+        # API URL to search for game grids
+        $apiUrl = "https://www.steamgriddb.com/api/v2/search/autocomplete/$searchQuery circle logo"
+
+        try {
+            # Make API call to fetch game data
+            $response = Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{
+                "Authorization" = "Bearer $apiKey"
+            }
+            $gameId = $response.data[0].id
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error retrieving game data. Please check your API key or game name.", "API Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            return
+        }
+
+        # Get grid images for the selected game
+        $gridUrl = "https://www.steamgriddb.com/api/v2/grids/game/$gameId"
+        try {
+            $gridResponse = Invoke-RestMethod -Uri $gridUrl -Method Get -Headers @{
+                "Authorization" = "Bearer $apiKey"
+            }
+            $images = $gridResponse.data | ForEach-Object { $_.url }
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error retrieving images. Please try again later.", "Image Fetch Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            return
+        }
+
+        # Handle no images found
+        if (-not $images) {
+            [System.Windows.Forms.MessageBox]::Show("No images found for the entered game.", "No Results", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            return
+        }
+
+        # Populate images in the FlowLayoutPanel
+        foreach ($imageUrl in $images) {
+            $imageBox = New-Object System.Windows.Forms.PictureBox
+            $imageBox.Size = New-Object System.Drawing.Size(150, 150)
+            $imageBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+            $imageBox.ImageLocation = $imageUrl
+            $imageBox.Tag = $imageUrl
+
+            # Add border and hover effects
+            $imageBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+            $imageBox.Add_Click({
+                $selectedImageUrl = $this.Tag
+                $previewBox.ImageLocation = $selectedImageUrl
+                $textBoxLogo.Text = $selectedImageUrl
+                [System.Windows.Forms.Clipboard]::SetText($selectedImageUrl)
+
+                # Close the results form after selection
+                $scrapForm.Close()
+            })
+            $imageBox.Add_MouseEnter({
+                $this.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
+            })
+            $imageBox.Add_MouseLeave({
+                $this.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+            })
+
+            $flowPanel.Controls.Add($imageBox)
+        }
+    }
+
+    # Create a new form for displaying the images
+    $scrapForm = New-Object System.Windows.Forms.Form
+    $scrapForm.Text = "SteamGridDB Results"
+    $scrapForm.Size = New-Object System.Drawing.Size(800, 700)
+    $scrapForm.StartPosition = "CenterScreen"
+
+    # Create a FlowLayoutPanel to hold the images
+    $flowPanel = New-Object System.Windows.Forms.FlowLayoutPanel
+    $flowPanel.Size = New-Object System.Drawing.Size(780, 500)
+    $flowPanel.Location = New-Object System.Drawing.Point(10, 10)
+    $flowPanel.AutoScroll = $true
+    $scrapForm.Controls.Add($flowPanel)
+
+    # Create a PictureBox to show the preview of the selected image
+    $previewBox = New-Object System.Windows.Forms.PictureBox
+    $previewBox.Size = New-Object System.Drawing.Size(200, 200)
+    $previewBox.Location = New-Object System.Drawing.Point(10, 520)
+    $previewBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+    $scrapForm.Controls.Add($previewBox)
+
+    # Create a TextBox for manual search input
+    $manualSearchBox = New-Object System.Windows.Forms.TextBox
+    $manualSearchBox.Size = New-Object System.Drawing.Size(400, 30)
+    $manualSearchBox.Location = New-Object System.Drawing.Point(230, 520)
+    $scrapForm.Controls.Add($manualSearchBox)
+
+    # Create a Button for triggering a manual search
+    $searchButton = New-Object System.Windows.Forms.Button
+    $searchButton.Text = "Search"
+    $searchButton.Size = New-Object System.Drawing.Size(100, 30)
+    $searchButton.Location = New-Object System.Drawing.Point(650, 520)
+    $scrapForm.Controls.Add($searchButton)
+
+    # Add click event for manual search
+    $searchButton.Add_Click({
+        $manualSearchQuery = $manualSearchBox.Text
+        if (-not $manualSearchQuery) {
+            [System.Windows.Forms.MessageBox]::Show("Please enter a game name to search.", "Input Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+        } else {
+            UpdateResults -searchQuery $manualSearchQuery -flowPanel $flowPanel -previewBox $previewBox
+        }
+    })
+
+    # Initial population of results using the selected game
+    UpdateResults -searchQuery $selectedGame -flowPanel $flowPanel -previewBox $previewBox
+
+    # Show the results form
+    [void]$scrapForm.ShowDialog()
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # Define the Update button functionality
+    $buttonUpdate.Add_Click({
+        $logoInput = $textBoxLogo.Text  # Store user input in a separate variable
+
+        # Define the destination path for the logo image
+        $destinationPathIMG = $global:logoPath
+
+        # Remove the current image from the PictureBox
+        $logoPictureBox.Image.Dispose()
+        $logoPictureBox.Image = $null
+        Write-Host "Removed existing image from PictureBox."
+
+        try {
+            # Check if a URL is provided for the logo image
+            if ($logoInput -match "^https://") {
+                Write-Host "Downloading image $logoInput"
+
+                # If it's a URL, download the image
+                $webClient = New-Object System.Net.WebClient
+                $tempPath = [System.IO.Path]::GetTempFileName()
+                $webClient.DownloadFile($logoInput, $tempPath)
+
+                Write-Host "Image downloaded to temporary file: $tempPath"
+
+                # Resize the image to the desired dimensions (adjust as needed)
+                Add-Type -AssemblyName System.Drawing
+                $image = [System.Drawing.Image]::FromFile($tempPath)
+                $resizedImage = New-Object System.Drawing.Bitmap(512, 512)  # Adjust dimensions as needed
+                $graphics = [System.Drawing.Graphics]::FromImage($resizedImage)
+                $graphics.DrawImage($image, 0, 0, 512, 512)
+
+                Write-Host "Image resized to 405x100 pixels."
+
+                # Ensure the destination directory exists
+                $destinationDir = Split-Path -Path $destinationPathIMG -Parent
+                if (-not (Test-Path $destinationDir)) {
+                    New-Item -ItemType Directory -Path $destinationDir | Out-Null
+                    Write-Host "Created destination directory: $destinationDir"
+                }
+
+                # Save the resized image
+                $resizedImage.Save($destinationPathIMG, [System.Drawing.Imaging.ImageFormat]::Png)
+
+                Write-Host "Resized image saved to: $destinationPathIMG"
+
+                # Clean up
+                $image.Dispose()
+                $resizedImage.Dispose()
+                $graphics.Dispose()
+                Remove-Item -Path $tempPath
+
+                # Load the new image into the existing PictureBox
+                $logoPictureBox.Image = [System.Drawing.Image]::FromFile($destinationPathIMG)
+                Write-Host "New image loaded into PictureBox."
+                Write-Host "Logo image updated successfully!"
+            } else {
+                # If it's a local file path, resize and save the image
+                if (Test-Path $logoInput) {
+                    Write-Host "Loading image from local file..."
+
+                    Add-Type -AssemblyName System.Drawing
+                    $image = [System.Drawing.Image]::FromFile($logoInput)
+                    $resizedImage = New-Object System.Drawing.Bitmap(512, 512)  # Adjust dimensions as needed
+                    $graphics = [System.Drawing.Graphics]::FromImage($resizedImage)
+                    $graphics.DrawImage($image, 0, 0, 512, 512)
+
+                    Write-Host "Image resized to 405x100 pixels."
+
+                    # Ensure the destination directory exists
+                    $destinationDir = Split-Path -Path $destinationPathIMG -Parent
+                    if (-not (Test-Path $destinationDir)) {
+                        New-Item -ItemType Directory -Path $destinationDir | Out-Null
+                        Write-Host "Created destination directory: $destinationDir"
+                    }
+
+                    # Save the resized image
+                    $resizedImage.Save($destinationPathIMG, [System.Drawing.Imaging.ImageFormat]::Png)
+
+                    Write-Host "Resized image saved to: $destinationPathIMG"
+
+                    # Clean up
+                    $image.Dispose()
+                    $resizedImage.Dispose()
+                    $graphics.Dispose()
+
+                    Write-Host "Logo image updated successfully!"
+                } else {
+                    Write-Host "The specified file path is not valid!"
+                }
+            }
+        } catch {
+            Write-Host "An error occurred: $_"
+        }
+
+        # Close the logo form after updating
+        $logoForm.Close()
+    })
+
+    # Define the Back button functionality
+    $buttonBack.Add_Click({
+        $logoForm.Close()  # Close the logo form without making any changes
+    })
+
+    # Show the logo form
+    $logoForm.Add_Shown({$logoForm.Activate()})
+    [void]$logoForm.ShowDialog()
+})
+
+
+# Add Click event handlers for the Wheel Box
+$wheelPictureBox.Add_Click({
+    # Create a new form for wheel image URL or path input
+    $wheelForm = New-Object System.Windows.Forms.Form
+    $wheelForm.Text = "Update Wheel Image"
+    $wheelForm.Size = New-Object System.Drawing.Size(500, 200)
+    $wheelForm.StartPosition = "CenterScreen"
+
+    # Create a text box for URL or path input
+    $textBoxWheel = New-Object System.Windows.Forms.TextBox
+    $textBoxWheel.Location = New-Object System.Drawing.Point(10, 20)
+    $textBoxWheel.Size = New-Object System.Drawing.Size(460, 20)
+    $wheelForm.Controls.Add($textBoxWheel)
+
+    # Create an Update button
+    $buttonUpdate = New-Object System.Windows.Forms.Button
+    $buttonUpdate.Text = "Update"
+    $buttonUpdate.Location = New-Object System.Drawing.Point(10, 60)
+    $buttonUpdate.Size = New-Object System.Drawing.Size(100, 30)
+    $wheelForm.Controls.Add($buttonUpdate)
+
+    # Create a Scrap button
+    $buttonScrap = New-Object System.Windows.Forms.Button
+    $buttonScrap.Text = "Scrap"
+    $buttonScrap.Location = New-Object System.Drawing.Point(120, 60)
+    $buttonScrap.Size = New-Object System.Drawing.Size(100, 30)
+    $wheelForm.Controls.Add($buttonScrap)
+
+    # Create a Back button
+    $buttonBack = New-Object System.Windows.Forms.Button
+    $buttonBack.Text = "Back"
+    $buttonBack.Location = New-Object System.Drawing.Point(230, 60)
+    $buttonBack.Size = New-Object System.Drawing.Size(100, 30)
+    $wheelForm.Controls.Add($buttonBack)
+# Define the Scrap button functionality
+
+
+$buttonScrap.Add_Click({
+    # Validate API key
+    $apiKey = "03c3bdbbc7922e3e4c25936f4c4e7dcb"
+    if (-not $apiKey) {
+        [System.Windows.Forms.MessageBox]::Show("Please provide a valid SteamGridDB API key.", "API Key Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        return
+    }
+
+    # Get the selected game
+    $selectedGame = $selectedGameDropdown.SelectedItem
+    if (-not $selectedGame) {
+        [System.Windows.Forms.MessageBox]::Show("Please select a game from the dropdown.", "Game Not Selected", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+        return
+    }
+
+    # Function to fetch images and update the FlowLayoutPanel
+    function UpdateResults {
+        param ($searchQuery, $flowPanel, $previewBox)
+
+        # Clear existing controls
+        $flowPanel.Controls.Clear()
+
+        # API URL to search for game grids
+        $apiUrl = "https://www.steamgriddb.com/api/v2/search/autocomplete/$searchQuery"
+
+        try {
+            # Make API call to fetch game data
+            $response = Invoke-RestMethod -Uri $apiUrl -Method Get -Headers @{
+                "Authorization" = "Bearer $apiKey"
+            }
+            $gameId = $response.data[0].id
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error retrieving game data. Please check your API key or game name.", "API Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            return
+        }
+
+        # Get grid images for the selected game
+        $gridUrl = "https://www.steamgriddb.com/api/v2/grids/game/$gameId"
+        try {
+            $gridResponse = Invoke-RestMethod -Uri $gridUrl -Method Get -Headers @{
+                "Authorization" = "Bearer $apiKey"
+            }
+            $images = $gridResponse.data | ForEach-Object { $_.url }
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error retrieving images. Please try again later.", "Image Fetch Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            return
+        }
+
+        # Handle no images found
+        if (-not $images) {
+            [System.Windows.Forms.MessageBox]::Show("No images found for the entered game.", "No Results", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            return
+        }
+
+        # Populate images in the FlowLayoutPanel
+        foreach ($imageUrl in $images) {
+            $imageBox = New-Object System.Windows.Forms.PictureBox
+            $imageBox.Size = New-Object System.Drawing.Size(150, 150)
+            $imageBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+            $imageBox.ImageLocation = $imageUrl
+            $imageBox.Tag = $imageUrl
+
+            # Add border and hover effects
+            $imageBox.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+            $imageBox.Add_Click({
+                $selectedImageUrl = $this.Tag
+                $previewBox.ImageLocation = $selectedImageUrl
+                $textBoxWheel.Text = $selectedImageUrl
+                [System.Windows.Forms.Clipboard]::SetText($selectedImageUrl)
+
+                # Close the results form after selection
+                $scrapForm.Close()
+            })
+            $imageBox.Add_MouseEnter({
+                $this.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
+            })
+            $imageBox.Add_MouseLeave({
+                $this.BorderStyle = [System.Windows.Forms.BorderStyle]::None
+            })
+
+            $flowPanel.Controls.Add($imageBox)
+        }
+    }
+
+    # Create a new form for displaying the images
+    $scrapForm = New-Object System.Windows.Forms.Form
+    $scrapForm.Text = "SteamGridDB Results"
+    $scrapForm.Size = New-Object System.Drawing.Size(800, 700)
+    $scrapForm.StartPosition = "CenterScreen"
+
+    # Create a FlowLayoutPanel to hold the images
+    $flowPanel = New-Object System.Windows.Forms.FlowLayoutPanel
+    $flowPanel.Size = New-Object System.Drawing.Size(780, 500)
+    $flowPanel.Location = New-Object System.Drawing.Point(10, 10)
+    $flowPanel.AutoScroll = $true
+    $scrapForm.Controls.Add($flowPanel)
+
+    # Create a PictureBox to show the preview of the selected image
+    $previewBox = New-Object System.Windows.Forms.PictureBox
+    $previewBox.Size = New-Object System.Drawing.Size(200, 200)
+    $previewBox.Location = New-Object System.Drawing.Point(10, 520)
+    $previewBox.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+    $scrapForm.Controls.Add($previewBox)
+
+    # Create a TextBox for manual search input
+    $manualSearchBox = New-Object System.Windows.Forms.TextBox
+    $manualSearchBox.Size = New-Object System.Drawing.Size(400, 30)
+    $manualSearchBox.Location = New-Object System.Drawing.Point(230, 520)
+    $scrapForm.Controls.Add($manualSearchBox)
+
+    # Create a Button for triggering a manual search
+    $searchButton = New-Object System.Windows.Forms.Button
+    $searchButton.Text = "Search"
+    $searchButton.Size = New-Object System.Drawing.Size(100, 30)
+    $searchButton.Location = New-Object System.Drawing.Point(650, 520)
+    $scrapForm.Controls.Add($searchButton)
+
+    # Add click event for manual search
+    $searchButton.Add_Click({
+        $manualSearchQuery = $manualSearchBox.Text
+        if (-not $manualSearchQuery) {
+            [System.Windows.Forms.MessageBox]::Show("Please enter a game name to search.", "Input Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+        } else {
+            UpdateResults -searchQuery $manualSearchQuery -flowPanel $flowPanel -previewBox $previewBox
+        }
+    })
+
+    # Initial population of results using the selected game
+    UpdateResults -searchQuery $selectedGame -flowPanel $flowPanel -previewBox $previewBox
+
+    # Show the results form
+    [void]$scrapForm.ShowDialog()
+})
+
+# Define the Update button functionality
+$buttonUpdate.Add_Click({
+    $wheelInput = $textBoxWheel.Text  # Store user input in a separate variable
+
+    # Define the destination path for the wheel image
+    $destinationPathIMG = $global:wheelPath
+        # Remove the current image from the PictureBox
+        $wheelPictureBox.Image.Dispose()
+        $wheelPictureBox.Image = $null
+        Write-Host "Removed existing image from PictureBox."
+    try {
+        # Check if a URL is provided for the wheel image
+        if ($wheelInput -match "^https://") {
+            Write-Host "Downloading image $wheelInput"
+
+            # If it's a URL, download the image
+            $webClient = New-Object System.Net.WebClient
+            $tempPath = [System.IO.Path]::GetTempFileName()
+            $webClient.DownloadFile($wheelInput, $tempPath)
+
+            Write-Host "Image downloaded to temporary file: $tempPath"
+
+            # Resize the image to 405x100 pixels
+            Add-Type -AssemblyName System.Drawing
+            $image = [System.Drawing.Image]::FromFile($tempPath)
+            $resizedImage = New-Object System.Drawing.Bitmap(405, 100)
+            $graphics = [System.Drawing.Graphics]::FromImage($resizedImage)
+            $graphics.DrawImage($image, 0, 0, 405, 100)
+
+            Write-Host "Image resized to 405x100 pixels."
+
+            # Ensure the destination directory exists
+            $destinationDir = Split-Path -Path $destinationPathIMG -Parent
+            if (-not (Test-Path $destinationDir)) {
+                New-Item -ItemType Directory -Path $destinationDir | Out-Null
+                Write-Host "Created destination directory: $destinationDir"
+            }
+
+            # Save the resized image
+            $resizedImage.Save($destinationPathIMG, [System.Drawing.Imaging.ImageFormat]::Png)
+
+            Write-Host "Resized image saved to: $destinationPathIMG"
+
+            # Clean up
+            $image.Dispose()
+            $resizedImage.Dispose()
+            $graphics.Dispose()
+            Remove-Item -Path $tempPath
+        # Load the new image into the existing PictureBox
+        $wheelPictureBox.Image = [System.Drawing.Image]::FromFile($destinationPathIMG)
+        Write-Host "New image loaded into PictureBox."
+            Write-Host "Wheel image updated successfully!"
+        } else {
+            # If it's a local file path, resize and save the image
+            if (Test-Path $wheelInput) {
+                Write-Host "Loading image from local file..."
+
+                Add-Type -AssemblyName System.Drawing
+                $image = [System.Drawing.Image]::FromFile($wheelInput)
+                $resizedImage = New-Object System.Drawing.Bitmap(405, 100)
+                $graphics = [System.Drawing.Graphics]::FromImage($resizedImage)
+                $graphics.DrawImage($image, 0, 0, 405, 100)
+
+                Write-Host "Image resized to 405x100 pixels."
+
+                # Ensure the destination directory exists
+                $destinationDir = Split-Path -Path $destinationPathIMG -Parent
+                if (-not (Test-Path $destinationDir)) {
+                    New-Item -ItemType Directory -Path $destinationDir | Out-Null
+                    Write-Host "Created destination directory: $destinationDir"
+                }
+
+                # Save the resized image
+                $resizedImage.Save($destinationPathIMG, [System.Drawing.Imaging.ImageFormat]::Png)
+
+                Write-Host "Resized image saved to: $destinationPathIMG"
+
+                # Clean up
+                $image.Dispose()
+                $resizedImage.Dispose()
+                $graphics.Dispose()
+
+                   Write-Host "Wheel image updated successfully!"
+            } else {
+                Write-Host "The specified file path is not valid!"
+            }
+        }
+    } catch {
+        Write-Host "An error occurred: $_"
+    }
+
+    # Close the wheel form after updating
+        $wheelForm.Close()
+    })
+
+    # Define the Back button functionality
+    $buttonBack.Add_Click({
+        $wheelForm.Close()  # Close the wheel form without making any changes
+    })
+
+    # Show the wheel form
+    $wheelForm.Add_Shown({$wheelForm.Activate()})
+    [void]$wheelForm.ShowDialog()
+})
+
+$mediaElement.Add_MouseLeftButtonDown({
+    # Create a new form for video URL or path input
+    $videoForm = New-Object System.Windows.Forms.Form
+    $videoForm.Text = "Update Video"
+    $videoForm.Size = New-Object System.Drawing.Size(400, 150)
+    $videoForm.StartPosition = "CenterScreen"
+
+    # Create a text box for URL or path input
+    $textBoxVideo = New-Object System.Windows.Forms.TextBox
+    $textBoxVideo.Location = New-Object System.Drawing.Point(10, 20)
+    $textBoxVideo.Size = New-Object System.Drawing.Size(360, 20)
+    $videoForm.Controls.Add($textBoxVideo)
+
+    # Create an Update button
+    $buttonUpdate = New-Object System.Windows.Forms.Button
+    $buttonUpdate.Text = "Update"
+    $buttonUpdate.Location = New-Object System.Drawing.Point(10, 60)
+    $buttonUpdate.Size = New-Object System.Drawing.Size(100, 30)
+    $videoForm.Controls.Add($buttonUpdate)
+
+    # Create a Back button
+    $buttonBack = New-Object System.Windows.Forms.Button
+    $buttonBack.Text = "Back"
+    $buttonBack.Location = New-Object System.Drawing.Point(120, 60)
+    $buttonBack.Size = New-Object System.Drawing.Size(100, 30)
+    $videoForm.Controls.Add($buttonBack)
+
+    # Define the Update button functionality
+    $buttonUpdate.Add_Click({
+        $userVideoInput = $textBoxVideo.Text  # Store user input in a separate variable
+
+        # Define the destination path for the video
+        $destinationPath = $global:videoPath
+
+        # Log the destination path
+        Write-Host "Destination path: $destinationPath"
+
+        # Check if a URL is provided for the video (starts with https://)
+        if ($userVideoInput -match "^https://") {
+                    # If the destination file already exists, delete it
+        if (Test-Path $destinationPath) {
+            Write-Host "File already exists. Deleting the existing file: $destinationPath"
+            Remove-Item -Path $destinationPath -Force  # Force deletion of the file
+        }
+
+			# If it's a URL, use yt-dlp to download the video with the specified arguments
+# Define the path to the yt-dlp executable
+$ytdlpPath = ".\bin\yt-dlp.exe"
+
+# Check if yt-dlp.exe exists in the bin directory
+if (-Not (Test-Path $ytdlpPath)) {
+    # Prompt the user to download yt-dlp
+    $response = [System.Windows.Forms.MessageBox]::Show(
+        "yt-dlp is missing. Would you like to download it?", 
+        "Download yt-dlp", 
+        [System.Windows.Forms.MessageBoxButtons]::YesNo, 
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+
+    if ($response -eq "Yes") {
+        Write-Host "Downloading yt-dlp..."
+
+        # Create the bin directory if it doesn't exist
+        if (-Not (Test-Path ".\bin")) {
+            New-Item -ItemType Directory -Path ".\bin" | Out-Null
+        }
+
+        # URL to the latest yt-dlp.exe (official GitHub release)
+        $ytdlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+
+        # Download yt-dlp.exe to the bin directory
+        Invoke-WebRequest -Uri $ytdlpUrl -OutFile $ytdlpPath
+
+        Write-Host "yt-dlp has been downloaded to the bin directory."
+    } else {
+        Write-Host "Download canceled. Exiting script."
+        Exit
+    }
+} else {
+    Write-Host "yt-dlp is already present in the bin directory."
+}
+
+
+
+            if (Test-Path $ytDlpPath) {
+                # Arguments for yt-dlp: using mp4+140 format and the specified output pattern
+                $arguments = @(
+                    "-f", "mp4+140",
+
+                    $userVideoInput,
+        "-o", "`"$global:videoPath.bak`""
+    )
+
+                # Log the yt-dlp command
+                Write-Host "Running yt-dlp with arguments: $arguments"
+
+                # Start the yt-dlp process with the correct arguments
+                $process = Start-Process -FilePath $ytDlpPath -ArgumentList $arguments -NoNewWindow -Wait -PassThru
+
+                # Log the process exit code
+                Write-Host "yt-dlp process exited with code: $($process.ExitCode)"
+
+  if ($process.ExitCode -eq 0) {
+    # Run FFmpeg to trim the first 10 seconds from the downloaded video
+	# Define the path to the bin directory
+$binDirectory = ".\bin"
+
+# Silently search for ffmpeg.exe in the bin directory and its subfolders
+$ffmpegExePath = Get-ChildItem -Path $binDirectory -Recurse -Filter "ffmpeg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+
+if ($ffmpegExePath) {
+    Write-Host "ffmpeg.exe is already present at: $ffmpegExePath"
+} else {
+    Write-Host "ffmpeg.exe not found in the bin directory or its subfolders."
+
+    # Prompt the user to download ffmpeg
+    $response = [System.Windows.Forms.MessageBox]::Show(
+        "ffmpeg.exe is missing. Would you like to download it?", 
+        "Download ffmpeg", 
+        [System.Windows.Forms.MessageBoxButtons]::YesNo, 
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+
+    if ($response -eq "Yes") {
+        Write-Host "Downloading and extracting ffmpeg..."
+
+        # Create the bin directory if it doesn't exist
+        if (-Not (Test-Path $binDirectory)) {
+            New-Item -ItemType Directory -Path $binDirectory | Out-Null
+        }
+
+        # URL to the FFmpeg binary (replace with the actual URL)
+        $ffmpegUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+
+        # Temporary file path for the downloaded zip
+        $zipFilePath = ".\ffmpeg.zip"
+
+        # Download the FFmpeg zip file
+        Invoke-WebRequest -Uri $ffmpegUrl -OutFile $zipFilePath
+
+        # Extract the zip file to the bin directory
+        Expand-Archive -Path $zipFilePath -DestinationPath $binDirectory -Force
+
+        # Clean up the downloaded zip file
+        Remove-Item -Path $zipFilePath
+
+        # Search for ffmpeg.exe again after extraction
+        $ffmpegExePath = Get-ChildItem -Path $binDirectory -Recurse -Filter "ffmpeg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+
+        if ($ffmpegExePath) {
+            Write-Host "ffmpeg.exe has been downloaded and extracted to: $ffmpegExePath"
+
+            # Set ffmpeg.exe path as a global environment variable
+            [System.Environment]::SetEnvironmentVariable("FFMPEG_PATH", $ffmpegExePath, [System.EnvironmentVariableTarget]::Machine)
+
+            Write-Host "FFMPEG_PATH environment variable has been set globally to: $ffmpegExePath"
+        } else {
+            Write-Host "ffmpeg.exe could not be found after extraction. Please check the downloaded files."
+        }
+    } else {
+        Write-Host "Download canceled. Exiting script."
+        Exit
+    }
+}
+    $ffmpegPath = $ffmpegExePath 
+    if (Test-Path $ffmpegPath) {
+        # FFmpeg arguments for trimming the first 10 seconds
+$ffmpegArguments = @(
+    "-i", "`"$global:videoPath.bak`"", # Input file (the .bak file)
+    "-ss", "00:00:05",                # Trim 10 seconds from the start (frame-accurate)
+#    "-map", "0",                      # Copy all streams
+#    "-map_metadata", "0",             # Preserve metadata
+#    "-c:v", "copy",                   # Copy the video codec without re-encoding
+#    "-c:a", "copy",                   # Copy the audio codec without re-encoding
+    "-avoid_negative_ts", "1",        # Handle timestamps to avoid blanks
+    "`"$destinationPath`""            # Output file (the final destination)
+)
+
+        # Run FFmpeg
+        $ffmpegProcess = Start-Process -FilePath $ffmpegPath -ArgumentList $ffmpegArguments -NoNewWindow -Wait -PassThru
+
+        # Check if FFmpeg succeeded
+        if ($ffmpegProcess.ExitCode -eq 0) {
+            Remove-Item -Path "$global:videoPath.bak" -Force  # Remove the .bak file
+            [System.Windows.Forms.MessageBox]::Show("Video downloaded and trimmed successfully!", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("Failed to trim the video.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("FFmpeg not found!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+} else {
+    [System.Windows.Forms.MessageBox]::Show("Failed to download video!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+}
+
+            } else {
+                [System.Windows.Forms.MessageBox]::Show("yt-dlp.exe not found in the script directory!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+        } else {
+            # If it's a local file path, copy the file to the video folder
+            if (Test-Path $userVideoInput) {
+                Copy-Item -Path $userVideoInput -Destination $destinationPath -Force
+                [System.Windows.Forms.MessageBox]::Show("File copied to video folder.", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            } else {
+                [System.Windows.Forms.MessageBox]::Show("The specified file path is not valid!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+        }
+
+        # Close the video form after updating
+        $videoForm.Close()
+    })
+
+    # Define the Back button functionality
+    $buttonBack.Add_Click({
+        $videoForm.Close()  # Close the video form without making any changes
+    })
+
+    # Show the video form
+    $videoForm.Add_Shown({$videoForm.Activate()})
+    [void]$videoForm.ShowDialog()
+})
+
+# Show the main form
+$form.Add_Shown({$form.Activate()})
+[void]$form.ShowDialog()
