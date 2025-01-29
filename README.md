@@ -25,10 +25,10 @@ When clicked, this button will:
 ---
 
 ## Requirments
-PowerShell v5+ 
-SteamGridApi (Get it from streamgrid website)
-YT-DLP (will be downloaded when needed)
-FFMPEG (will be downloaded when needed)
+  - PowerShell 5 and later
+  - SteamGridApi (Get it from streamgrid website)
+  - YT-DLP (will be downloaded when needed)
+  - FFMPEG (will be downloaded when needed)
 
 ## Credits
 
