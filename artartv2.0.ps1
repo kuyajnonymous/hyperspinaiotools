@@ -4,8 +4,7 @@ Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName WindowsFormsIntegration  # Needed for integrating WPF controls into Windows Forms
 
-# Define base location for dynamic paths
-$hyperspinlocation = "C:\retrocade"  # Ensure this path is correct
+
 
 # Create the main form
 $form = New-Object System.Windows.Forms.Form
@@ -13,50 +12,52 @@ $form.Text = "Game Selector"
 $form.Size = New-Object System.Drawing.Size(500, 450)  # Increased height for new label section
 $form.StartPosition = "CenterScreen"
 
+
+
 # Create a text box for the game folder
 $folderTextBox = New-Object System.Windows.Forms.TextBox
-$folderTextBox.Location = New-Object System.Drawing.Point(10, 12)
+$folderTextBox.Location = New-Object System.Drawing.Point(10, 40)
 $folderTextBox.Size = New-Object System.Drawing.Size(240, 25)
 $form.Controls.Add($folderTextBox)
+
 
 # Create a button to browse for the game folder
 $browseButton = New-Object System.Windows.Forms.Button
 $browseButton.Text = "Browse"
-$browseButton.Location = New-Object System.Drawing.Point(255, 10)
+$browseButton.Location = New-Object System.Drawing.Point(255, 38)
 $browseButton.Size = New-Object System.Drawing.Size(75, 23)
 $form.Controls.Add($browseButton)
 
 # Create a dropdown for selected game
 $selectedGameDropdown = New-Object System.Windows.Forms.ComboBox
-$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 40)
+$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 70)
 $selectedGameDropdown.Size = New-Object System.Drawing.Size(325, 21)
 $form.Controls.Add($selectedGameDropdown)
 
 # Create the clickable box on the right of the TextBox and ComboBox rows
 $addBox = New-Object System.Windows.Forms.Button
 $addBox.Text = "ADD"
-$addBox.Location = New-Object System.Drawing.Point(340, 10)  # Right of the TextBox and Button
+$addBox.Location = New-Object System.Drawing.Point(340, 38)  # Right of the TextBox and Button
 $addBox.Size = New-Object System.Drawing.Size(70, 50)
 $form.Controls.Add($addBox)
-
 
 # Create boxes for logo, wheel, and video
 $logoBox = New-Object System.Windows.Forms.GroupBox
 $logoBox.Text = "Logo"
-$logoBox.Location = New-Object System.Drawing.Point(10, 70)
+$logoBox.Location = New-Object System.Drawing.Point(10, 100)
 $logoBox.Size = New-Object System.Drawing.Size(145, 210)
 $form.Controls.Add($logoBox)
 
 $wheelBox = New-Object System.Windows.Forms.GroupBox
 $wheelBox.Text = "Wheel"
-$wheelBox.Location = New-Object System.Drawing.Point(160, 70)
+$wheelBox.Location = New-Object System.Drawing.Point(160, 100)
 $wheelBox.Size = New-Object System.Drawing.Size(250, 75)
 $form.Controls.Add($wheelBox)
 
 # Create the Video GroupBox (unchanged)
 $videoBox = New-Object System.Windows.Forms.GroupBox
 $videoBox.Text = "Video"
-$videoBox.Location = New-Object System.Drawing.Point(160, 150)
+$videoBox.Location = New-Object System.Drawing.Point(160, 180)
 $videoBox.Size = New-Object System.Drawing.Size(250, 130)
 $form.Controls.Add($videoBox)
 
@@ -91,88 +92,136 @@ $wpfHost.Dock = "Fill"
 $wpfHost.Child = $mediaElement
 $videoBox.Controls.Add($wpfHost)
 
-# Create labels for Game and Emulator
-$gameLabel = New-Object System.Windows.Forms.Label
-$gameLabel.Text = "Game:"
-$gameLabel.Location = New-Object System.Drawing.Point(10, 240)  # Adjusted position to fit below other components
-$gameLabel.Size = New-Object System.Drawing.Size(200, 20)
-$form.Controls.Add($gameLabel)
-
-$emulatorLabel = New-Object System.Windows.Forms.Label
-$emulatorLabel.Text = "Emulator:"
-$emulatorLabel.Location = New-Object System.Drawing.Point(10, 265)  # Adjusted position to fit below
-$emulatorLabel.Size = New-Object System.Drawing.Size(200, 20)
-$form.Controls.Add($emulatorLabel)
-
+# Labels for the bottom of the form (Romlist, CFG, RocketLauncher, Artworks)
 # Labels for the bottom of the form (Romlist, CFG, RocketLauncher, Artworks)
 $romlistLabel = New-Object System.Windows.Forms.Label
 $romlistLabel.Text = "Romlist"
-$romlistLabel.Location = New-Object System.Drawing.Point(10, 290)
-$romlistLabel.Size = New-Object System.Drawing.Size(100, 20)
+$romlistLabel.Location = New-Object System.Drawing.Point(10, 320)
+$romlistLabel.Size = New-Object System.Drawing.Size(50, 20)
 $form.Controls.Add($romlistLabel)
 
 $cfgLabel = New-Object System.Windows.Forms.Label
 $cfgLabel.Text = "CFG"
-$cfgLabel.Location = New-Object System.Drawing.Point(120, 290)
-$cfgLabel.Size = New-Object System.Drawing.Size(100, 20)
+$cfgLabel.Location = New-Object System.Drawing.Point(, 320)
+$cfgLabel.Size = New-Object System.Drawing.Size(30, 20)
 $form.Controls.Add($cfgLabel)
 
+$xmlLabel = New-Object System.Windows.Forms.Label
+$xmlLabel.Text = "XML"
+$xmlLabel.Location = New-Object System.Drawing.Point(170, 320)  # Positioned next to CFG
+$xmlLabel.Size = New-Object System.Drawing.Size(30, 20)
+$form.Controls.Add($xmlLabel)
+
+$batLabel = New-Object System.Windows.Forms.Label
+$batLabel.Text = "BAT"
+$batLabel.Location = New-Object System.Drawing.Point(340, 320)  # Positioned next to XML
+$batLabel.Size = New-Object System.Drawing.Size(30, 20)
+$form.Controls.Add($batLabel)
+
+# RocketLauncher label
 $rocketLauncherLabel = New-Object System.Windows.Forms.Label
 $rocketLauncherLabel.Text = "RocketLauncher"
-$rocketLauncherLabel.Location = New-Object System.Drawing.Point(230, 290)
-$rocketLauncherLabel.Size = New-Object System.Drawing.Size(100, 20)
+$rocketLauncherLabel.Location = New-Object System.Drawing.Point(450, 320)  # Positioned next to BAT
+$rocketLauncherLabel.Size = New-Object System.Drawing.Size(90, 20)
 $form.Controls.Add($rocketLauncherLabel)
 
 # Artworks label, starts as gray
 $artworksLabel = New-Object System.Windows.Forms.Label
 $artworksLabel.Text = "Artworks"
-$artworksLabel.Location = New-Object System.Drawing.Point(340, 290)
-$artworksLabel.Size = New-Object System.Drawing.Size(100, 20)
+$artworksLabel.Location = New-Object System.Drawing.Point(560, 320)  # Positioned next to RocketLauncher
+$artworksLabel.Size = New-Object System.Drawing.Size(70, 20)
 $artworksLabel.ForeColor = [System.Drawing.Color]::Gray  # Default color
 $form.Controls.Add($artworksLabel)
 
+
+
+# Adjust all labels to be on the same line within a 500px width
+$romlistLabel.Location = New-Object System.Drawing.Point(10, 355)
+$cfgLabel.Location = New-Object System.Drawing.Point(60, 355)
+$xmlLabel.Location = New-Object System.Drawing.Point(100, 355)
+$batLabel.Location = New-Object System.Drawing.Point(140, 355)
+$rocketLauncherLabel.Location = New-Object System.Drawing.Point(180, 355)
+$artworksLabel.Location = New-Object System.Drawing.Point(280, 355)
+#$EmulatorLabel.Location = New-Object System.Drawing.Point(380, 355)
+
+# Ensure the total width of the labels fits within the form
+$form.Width = 500  # Resize form if necessary to fit within 500px
+
+
+
+# Create a GroupBox for Hyperspin settings at the top
+$hyperspinGroupBox = New-Object System.Windows.Forms.GroupBox
+$hyperspinGroupBox.Text = "Hyperspin Settings"
+$hyperspinGroupBox.Location = New-Object System.Drawing.Point(10, 10)  # Top of the form
+$hyperspinGroupBox.Size = New-Object System.Drawing.Size(480, 55)  # Adjusted width to fit form
+$form.Controls.Add($hyperspinGroupBox)
+
+
+# Create the Browse button inside the group box
+$browseButtonTop = New-Object System.Windows.Forms.Button
+$browseButtonTop.Text = "Select Hyperspin"
+$browseButtonTop.Location = New-Object System.Drawing.Point(10, 20)
+$browseButtonTop.Size = New-Object System.Drawing.Size(110, 23)
+$hyperspinGroupBox.Controls.Add($browseButtonTop)
+
+# Create a label to display the selected folder path inside the group box
+$selectedFolderLabel = New-Object System.Windows.Forms.Label
+$selectedFolderLabel.Location = New-Object System.Drawing.Point(130, 24)  # Positioned to the right of the button
+$selectedFolderLabel.Size = New-Object System.Drawing.Size(100, 20)
+$selectedFolderLabel.Text = "No folder selected"
+$hyperspinGroupBox.Controls.Add($selectedFolderLabel)
+
+# Create a dropdown list (ComboBox) for collections, aligned to the right of the label
+$collectionsDropdown = New-Object System.Windows.Forms.ComboBox
+$collectionsDropdown.Location = New-Object System.Drawing.Point(240, 20)  # Positioned to the right of the label
+$collectionsDropdown.Size = New-Object System.Drawing.Size(160, 23)
+$collectionsDropdown.DropDownStyle = "DropDownList"  # Read-only dropdown
+$hyperspinGroupBox.Controls.Add($collectionsDropdown)
+
+
+
+
+
+# Adjust existing elements to move below the new GroupBox
+$folderTextBox.Location = New-Object System.Drawing.Point(10, 75)
+$browseButton.Location = New-Object System.Drawing.Point(255, 73)
+$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 105)
+$addBox.Location = New-Object System.Drawing.Point(340, 73)
+
+$logoBox.Location = New-Object System.Drawing.Point(10, 135)
+$wheelBox.Location = New-Object System.Drawing.Point(160, 135)
+$videoBox.Location = New-Object System.Drawing.Point(160, 215)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Declare global variables outside the event handler
+
 # Global variables to store media paths and existence flags
+#$global:hyperspinLocation = $global:hyperspinLocation
+$emulator = $global:emulator
 $global:logoPath = $null
 $global:wheelPath = $null
 $global:videoPath = $null
 $global:logoExists = $false
 $global:wheelExists = $false
 $global:videoExists = $false
-
-
-
-
-
-
-
-
-
-
-
-# Function to browse for folder
-$browseButton.Add_Click({
-    $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
-    if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-        $folderTextBox.Text = $folderBrowser.SelectedPath
-        $emulator = [System.IO.Path]::GetFileName($folderBrowser.SelectedPath)
-        
-        # Clear existing items in the dropdown
-        $selectedGameDropdown.Items.Clear()
-        
-        # Get directories in the selected folder
-        $directories = Get-ChildItem -Path $folderBrowser.SelectedPath -Directory
-        foreach ($dir in $directories) {
-            $selectedGameDropdown.Items.Add($dir.Name)
-        }
-
-        # Show a default prompt if no games are found
-        if ($selectedGameDropdown.Items.Count -eq 0) {
-            $selectedGameDropdown.Items.Add("No games found in selected folder.")
-        }
-    }
-})
-
-# Declare global variables outside the event handler
 $global:selectedGame = ""
 $global:selectedGameFolder = ""
 $global:emulatorFolder = ""
@@ -187,11 +236,102 @@ $global:cfgfile = ""
 $global:emulatorTextPath = ""
 $global:PCGamesIni = ""
 
+
+
+
+
+
+# Event handler for the Browse button click
+$browseButtonTop.Add_Click({
+    $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+    $folderBrowser.Description = "Select the Hyperspin folder"
+    $folderBrowser.RootFolder = [System.Environment+SpecialFolder]::MyComputer
+
+    if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        # Set the selected folder as a global variable
+        $global:hyperspinLocation = $folderBrowser.SelectedPath
+
+        # Update the label with the selected folder path
+        $selectedFolderLabel.Text = $global:hyperspinLocation
+
+        # Update the dropdown list with the found folders
+        Update-CollectionsDropdown
+
+        # Log the selected folder to the console
+        Write-Host "Selected Hyperspin folder: $global:hyperspinLocation"
+    }
+})
+
+
+#$EmulatorLabel.Location = New-Object System.Drawing.Point(350, 355)
+# Create the Emulator label and set default text (initially red)
+$EmulatorLabel = New-Object System.Windows.Forms.Label
+$EmulatorLabel.Text = "Emulator"
+$EmulatorLabel.Location = New-Object System.Drawing.Point(350, 355)  # Positioned next to RocketLauncher
+$EmulatorLabel.Size = New-Object System.Drawing.Size(200, 20)  # Increased width for readability
+$EmulatorLabel.ForeColor = [System.Drawing.Color]::Red  # Default color red
+$form.Controls.Add($EmulatorLabel)
+
+# Function to populate the dropdown with folders from \collections
+function Update-CollectionsDropdown {
+    $collectionsDropdown.Items.Clear()  # Clear previous items
+    if (Test-Path "$global:hyperspinLocation\collections") {
+        $folders = Get-ChildItem -Path "$global:hyperspinLocation\collections" -Directory | Select-Object -ExpandProperty Name
+        $collectionsDropdown.Items.AddRange($folders)
+    }
+}
+
+# Event handler for when a collection is selected
+$collectionsDropdown.Add_SelectedIndexChanged({
+    # Set the global variable $global:emulator to the selected collection
+    $global:emulator = $collectionsDropdown.SelectedItem
+
+    # Update the EmulatorLabel text dynamically based on the selected emulator
+    if ($global:emulator) {
+        $EmulatorLabel.Text = "$global:emulator"
+        $EmulatorLabel.ForeColor = [System.Drawing.Color]::Green  # Change color to green when selected
+    } else {
+        $EmulatorLabel.Text = "Emulator"
+        $EmulatorLabel.ForeColor = [System.Drawing.Color]::Red  # Default color red when not selected
+    }
+
+    # Optional: Output the selected emulator for debugging
+    Write-Host "Selected Emulator: $global:emulator"
+})
+
+# Update label position
+
+
+
+
+# Function to browse for folder
+$browseButton.Add_Click({
+    $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
+    if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        $folderTextBox.Text = $folderBrowser.SelectedPath
+        #$emulator = [System.IO.Path]::GetFileName($folderBrowser.SelectedPath)
+        $global:selectedGameFolder = $folderBrowser.SelectedPath
+        # Clear existing items in the dropdown
+        $selectedGameDropdown.Items.Clear()
+            Write-Host "ROM Foldet Path : $global:selectedGameFolder"
+        # Get directories in the selected folder
+        $directories = Get-ChildItem -Path $folderBrowser.SelectedPath -Directory
+        foreach ($dir in $directories) {
+            $selectedGameDropdown.Items.Add($dir.Name)
+        }
+
+        # Show a default prompt if no games are found
+        if ($selectedGameDropdown.Items.Count -eq 0) {
+            $selectedGameDropdown.Items.Add("No games found in selected folder.")
+        }
+    }
+})
+
 $selectedGameDropdown.Add_SelectedIndexChanged({
     if ($selectedGameDropdown.SelectedItem) {
         # Assign the selected game and update the label
         $global:selectedGame = $selectedGameDropdown.SelectedItem
-        $gameLabel.Text = "Game: $global:selectedGame"
+        Write-Host "Game: $global:selectedGame"
 
         # Get the full path of the selected game's folder
         $global:selectedGameFolder = Join-Path -Path $folderTextBox.Text -ChildPath $global:selectedGame
@@ -202,12 +342,13 @@ $selectedGameDropdown.Add_SelectedIndexChanged({
         $global:emulator = [System.IO.Path]::GetFileName($global:emulatorFolder)
 
         # Update the emulator label
-        $emulatorLabel.Text = "Emulator: $global:emulator"
+        Write-Host "Emulator: $global:emulator"
 
         # Dynamically create media paths for logo, wheel, and video
-        $global:logoPath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\logo\$global:selectedGame.png"
-        $global:wheelPath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\wheel\$global:selectedGame.png"
-        $global:videoPath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\videos\$global:selectedGame.mp4"
+        $global:logoPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\logo\$global:selectedGame.png"
+        $global:wheelPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\wheel\$global:selectedGame.png"
+        $global:videoPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\videos\$global:selectedGame.mp4"
+		$global:batPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
 
         # Show available artworks first (before checking $Emulator.txt)
         $global:logoExists = Test-Path $global:logoPath
@@ -251,25 +392,37 @@ $selectedGameDropdown.Add_SelectedIndexChanged({
         }
 
         # Check if the .cfg file exists
-        $global:cfgfile = Join-Path -Path $hyperspinlocation -ChildPath "romlists\All Systems\$global:selectedGame.cfg"
+        $global:cfgfile = Join-Path -Path $global:hyperspinLocation -ChildPath "romlists\All Systems\$global:selectedGame.cfg"
         if (Test-Path $global:cfgfile) {
             $cfgLabel.ForeColor = [System.Drawing.Color]::Green  # Green if .cfg file exists
+			            Write-Host "cfg File found $global:cfgfile"
         } else {
             $cfgLabel.ForeColor = [System.Drawing.Color]::Red  # Red if .cfg file does not exist
 
          
             }
         
-		
+		           # Check if the .bat file exists
+        $global:batPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
+        if (Test-Path $global:batPath) {
+            $batLabel.ForeColor = [System.Drawing.Color]::Green  # Green if .bat file exists
+			            Write-Host "BAT File found $global:batPath"
+        } else {
+            $batLabel.ForeColor = [System.Drawing.Color]::Red  # Red if .bat file does not exist
+
+         
+            }
+
+			
 		
 		
 
         # Dynamically determine the correct emulator.txt path based on emulator
-        $global:emulatorTextPath = Join-Path -Path $hyperspinlocation -ChildPath "romlists\$global:emulator\$global:emulator.txt"
+        $global:emulatorTextPath = Join-Path -Path $global:hyperspinLocation -ChildPath "romlists\$global:emulator\$global:emulator.txt"
 
         if ($global:emulator -eq "PC Games") {
             # Check for the default PC Games.txt path
-            $global:emulatorTextPath = "$hyperspinlocation\romlists\PC Games.txt"
+            $global:emulatorTextPath = "$global:hyperspinLocation\romlists\PC Games.txt"
         }
 
         if (Test-Path $global:emulatorTextPath) {
@@ -299,7 +452,7 @@ $selectedGameDropdown.Add_SelectedIndexChanged({
 
         # RocketLauncher logic (specific to PC Games emulator)
         if ($global:emulator -eq "PC Games") {
-            $global:PCGamesIni = Join-Path -Path $hyperspinlocation -ChildPath "RocketLauncher\Modules\PCLauncher\PC Games.ini"
+            $global:PCGamesIni = Join-Path -Path $global:hyperspinLocation -ChildPath "RocketLauncher\Modules\PCLauncher\PC Games.ini"
 
             if (Test-Path $global:PCGamesIni) {
                 $sectionExists = Select-String -Pattern "^\[$global:selectedGame\]" -Path $global:PCGamesIni
@@ -349,7 +502,7 @@ $addBox.Add_Click({
         return
     }
 
-    Write-Host "hyperspinlocation: $hyperspinlocation"
+    Write-Host "hyperspinlocation: $global:hyperspinLocation"
     Write-Host "selectedGameFolder: $selectedGameFolder"
     Write-Host "emulator: $emulator"
     Write-Host "selectedgame: $selectedGame"
@@ -456,7 +609,7 @@ exit
 "@
 
 # Determine the path for the batch file
-$batchFilePath = Join-Path -Path $hyperspinlocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
+$batchFilePath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
 #$batFilePath = Join-Path -Path $global:selectedGameFolder -ChildPath "$global:selectedGame.bat"
 $batFilePath = $batchFilePath
 
@@ -466,15 +619,24 @@ $batFileContent | Set-Content -Path $batFilePath -Force
 # Display the file creation in console
 Write-Host "Batch file created at: $batFilePath"
 Write-Host "Batch file content: $batFileContent"
+		           # Check if the .bat file exists
+        $global:batPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
+        if (Test-Path $global:batPath) {
+            $batLabel.ForeColor = [System.Drawing.Color]::Green  # Green if .bat file exists
+			            Write-Host "BAT File found $global:batPath"
+        } else {
+            $batLabel.ForeColor = [System.Drawing.Color]::Red  # Red if .bat file does not exist
 
+         
+            }
 # Initialize default values
 $game_genre = "Arcade"
 $platform = "$global:emulator"
 $release_year = "1984"
 
 # Define the file paths
-$allSystemsFilePath = Join-Path -Path $hyperspinlocation -ChildPath "romlists\All Systems.txt"
-$emulatorFilePath = Join-Path -Path $hyperspinlocation -ChildPath "romlists\$global:emulator.txt"
+$allSystemsFilePath = Join-Path -Path $global:hyperspinLocation -ChildPath "romlists\All Systems.txt"
+$emulatorFilePath = Join-Path -Path $global:hyperspinLocation -ChildPath "romlists\$global:emulator.txt"
 
 # Define the pattern to search for
 $pattern = [regex]::Escape("$global:selectedGame") + ";.*;$global:emulator"
@@ -508,10 +670,6 @@ function Add-GameEntryIfNeeded {
 # Check both All Systems.txt and Emulator-specific txt files
 Add-GameEntryIfNeeded -filePath $allSystemsFilePath
 Add-GameEntryIfNeeded -filePath $emulatorFilePath
-
-				
-				
-				
 				
 	# Assuming $global:selectedGame, $global:exename, $global:exenamefullpath, $global:foldername are set
 $PCGamesIni = $global:PCGamesIni
@@ -567,12 +725,21 @@ HideConsole=true
 			
 				
 				
-				
+	
+
+
+
+
+
+
+
+
+	
 				
 				
 				
 				        # Check if the .cfg file exists
-        $global:cfgfile = Join-Path -Path $hyperspinlocation -ChildPath "romlists\All Systems\$global:selectedGame.cfg"
+        $global:cfgfile = Join-Path -Path $global:hyperspinLocation -ChildPath "romlists\All Systems\$global:selectedGame.cfg"
         if (Test-Path $global:cfgfile) {
             $cfgLabel.ForeColor = [System.Drawing.Color]::Green  # Green if .cfg file exists
         } else {
@@ -1233,88 +1400,129 @@ $mediaElement.Add_MouseLeftButtonDown({
     $buttonBack.Location = New-Object System.Drawing.Point(120, 60)
     $buttonBack.Size = New-Object System.Drawing.Size(100, 30)
     $videoForm.Controls.Add($buttonBack)
+    # Create an Automatic button
 
-    # Define the Update button functionality
-    $buttonUpdate.Add_Click({
-        $userVideoInput = $textBoxVideo.Text  # Store user input in a separate variable
 
-        # Define the destination path for the video
-        $destinationPath = $global:videoPath
 
-        # Log the destination path
-        Write-Host "Destination path: $destinationPath"
 
-        # Check if a URL is provided for the video (starts with https://)
-        if ($userVideoInput -match "^https://") {
-                    # If the destination file already exists, delete it
+
+
+# Create the Automatic button
+$buttonAutomatic = New-Object System.Windows.Forms.Button
+$buttonAutomatic.Text = "Automatic"
+$buttonAutomatic.Location = New-Object System.Drawing.Point(230, 60)
+$buttonAutomatic.Size = New-Object System.Drawing.Size(100, 30)
+$videoForm.Controls.Add($buttonAutomatic)
+# Add click event handler for the Automatic button
+
+
+
+# Define the Update button functionality
+$buttonUpdate.Add_Click({
+    Write-Host "Update button clicked!"  # Debug log
+    $userVideoInput = $textBoxVideo.Text  # Store user input in a separate variable
+
+    # Check if destination path is set
+    if (-not $global:videoPath) {
+        [System.Windows.Forms.MessageBox]::Show("Destination path is not defined!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        return
+    }
+
+    $destinationPath = $global:videoPath
+    Write-Host "Destination path: $destinationPath"
+
+    # Create a progress form
+    $progressForm = New-Object System.Windows.Forms.Form
+    $progressForm.Text = "Updating..."
+    $progressForm.Width = 300
+    $progressForm.Height = 150
+    $progressForm.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
+    $progressForm.TopMost = $true
+
+    # Create a ProgressBar for the form
+    $progressBar = New-Object System.Windows.Forms.ProgressBar
+    $progressBar.Width = 250
+    $progressBar.Height = 30
+    $progressBar.Style = [System.Windows.Forms.ProgressBarStyle]::Marquee
+    $progressBar.MarqueeAnimationSpeed = 30
+    $progressForm.Controls.Add($progressBar)
+
+    # Show the progress form
+    $progressForm.Show()
+
+    # Check if a URL is provided for the video (starts with https://)
+    if ($userVideoInput -match "^https://") {
+        # If the destination file already exists, delete it
         if (Test-Path $destinationPath) {
             Write-Host "File already exists. Deleting the existing file: $destinationPath"
             Remove-Item -Path $destinationPath -Force  # Force deletion of the file
         }
 
-			# If it's a URL, use yt-dlp to download the video with the specified arguments
-# Define the path to the yt-dlp executable
-$ytdlpPath = ".\bin\yt-dlp.exe"
-
-# Check if yt-dlp.exe exists in the bin directory
-if (-Not (Test-Path $ytdlpPath)) {
-    # Prompt the user to download yt-dlp
-    $response = [System.Windows.Forms.MessageBox]::Show(
-        "yt-dlp is missing. Would you like to download it?", 
-        "Download yt-dlp", 
-        [System.Windows.Forms.MessageBoxButtons]::YesNo, 
-        [System.Windows.Forms.MessageBoxIcon]::Question
-    )
-
-    if ($response -eq "Yes") {
-        Write-Host "Downloading yt-dlp..."
-
-        # Create the bin directory if it doesn't exist
-        if (-Not (Test-Path ".\bin")) {
-            New-Item -ItemType Directory -Path ".\bin" | Out-Null
+        # yt-dlp logic
+        $ytdlpPath = ".\bin\yt-dlp.exe"
+        if (Test-Path $ytdlpPath) {
+            $arguments = @(
+                "-f", "mp4+140",
+                $userVideoInput,
+                "-o", "`"$global:videoPath.bak`""
+            )
+            Write-Host "Running yt-dlp with arguments: $arguments"
+            $process = Start-Process -FilePath $ytdlpPath -ArgumentList $arguments -NoNewWindow -Wait -PassThru
+            Write-Host "yt-dlp process exited with code: $($process.ExitCode)"
+            if ($process.ExitCode -eq 0) {
+                # Continue with ffmpeg trimming
+                $ffmpegExePath = Get-ChildItem -Path ".\bin" -Recurse -Filter "ffmpeg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+                if ($ffmpegExePath) {
+                    Write-Host "ffmpeg.exe found at: $ffmpegExePath"
+                    # Define FFmpeg arguments for trimming
+                    $ffmpegArguments = @(
+                        "-i", "`"$global:videoPath.bak`"",
+                        "-ss", "00:00:05",
+                        "`"$destinationPath`""
+                    )
+                    Write-Host "Running FFmpeg with arguments: $ffmpegArguments"
+                    $ffmpegProcess = Start-Process -FilePath $ffmpegExePath -ArgumentList $ffmpegArguments -NoNewWindow -Wait -PassThru
+                    Write-Host "FFmpeg process exited with code: $($ffmpegProcess.ExitCode)"
+                    if ($ffmpegProcess.ExitCode -eq 0) {
+                        Remove-Item -Path "$global:videoPath.bak" -Force  # Remove the .bak file
+                        [System.Windows.Forms.MessageBox]::Show("Video downloaded and trimmed successfully!", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+                    } else {
+                        [System.Windows.Forms.MessageBox]::Show("Failed to trim the video.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                    }
+                } else {
+                    [System.Windows.Forms.MessageBox]::Show("ffmpeg.exe not found!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                }
+            } else {
+                [System.Windows.Forms.MessageBox]::Show("Failed to download video!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("yt-dlp.exe not found in the script directory!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         }
-
-        # URL to the latest yt-dlp.exe (official GitHub release)
-        $ytdlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
-
-        # Download yt-dlp.exe to the bin directory
-        Invoke-WebRequest -Uri $ytdlpUrl -OutFile $ytdlpPath
-
-        Write-Host "yt-dlp has been downloaded to the bin directory."
     } else {
-        Write-Host "Download canceled. Exiting script."
-        Exit
+        # Local file handling (copy the file)
+        if (Test-Path $userVideoInput) {
+            Copy-Item -Path $userVideoInput -Destination $destinationPath -Force
+            [System.Windows.Forms.MessageBox]::Show("File copied to video folder.", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("The specified file path is not valid!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
     }
-} else {
-    Write-Host "yt-dlp is already present in the bin directory."
-}
+
+    # Close the progress form after updating
+    $progressForm.Close()
+
+    # Close the video form after updating
+    $videoForm.Close()
+})
 
 
 
-            if (Test-Path $ytDlpPath) {
-                # Arguments for yt-dlp: using mp4+140 format and the specified output pattern
-                $arguments = @(
-                    "-f", "mp4+140",
 
-                    $userVideoInput,
-        "-o", "`"$global:videoPath.bak`""
-    )
 
-                # Log the yt-dlp command
-                Write-Host "Running yt-dlp with arguments: $arguments"
 
-                # Start the yt-dlp process with the correct arguments
-                $process = Start-Process -FilePath $ytDlpPath -ArgumentList $arguments -NoNewWindow -Wait -PassThru
-
-                # Log the process exit code
-                Write-Host "yt-dlp process exited with code: $($process.ExitCode)"
-
-  if ($process.ExitCode -eq 0) {
-    # Run FFmpeg to trim the first 10 seconds from the downloaded video
-	# Define the path to the bin directory
-$binDirectory = ".\bin"
-
-# Silently search for ffmpeg.exe in the bin directory and its subfolders
+$buttonAutomatic.Add_Click({
+    # Silently search for ffmpeg.exe in the bin directory and its subfolders
+	$binDirectory = ".\bin"
 $ffmpegExePath = Get-ChildItem -Path $binDirectory -Recurse -Filter "ffmpeg.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
 
 if ($ffmpegExePath) {
@@ -1372,52 +1580,107 @@ if ($ffmpegExePath) {
     }
 }
     $ffmpegPath = $ffmpegExePath 
-    if (Test-Path $ffmpegPath) {
-        # FFmpeg arguments for trimming the first 10 seconds
-$ffmpegArguments = @(
-    "-i", "`"$global:videoPath.bak`"", # Input file (the .bak file)
-    "-ss", "00:00:05",                # Trim 10 seconds from the start (frame-accurate)
-#    "-map", "0",                      # Copy all streams
-#    "-map_metadata", "0",             # Preserve metadata
-#    "-c:v", "copy",                   # Copy the video codec without re-encoding
-#    "-c:a", "copy",                   # Copy the audio codec without re-encoding
-    "-avoid_negative_ts", "1",        # Handle timestamps to avoid blanks
-    "`"$destinationPath`""            # Output file (the final destination)
-)
+	# Check if yt-dlp.exe exists
+	# Check if yt-dlp.exe exists in the bin directory
+	    $ytdlpPath = ".\bin\yt-dlp.exe"
+if (-Not (Test-Path $ytdlpPath)) {
+    # Prompt the user to download yt-dlp
+    $response = [System.Windows.Forms.MessageBox]::Show(
+        "yt-dlp is missing. Would you like to download it?", 
+        "Download yt-dlp", 
+        [System.Windows.Forms.MessageBoxButtons]::YesNo, 
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
 
-        # Run FFmpeg
-        $ffmpegProcess = Start-Process -FilePath $ffmpegPath -ArgumentList $ffmpegArguments -NoNewWindow -Wait -PassThru
+    if ($response -eq "Yes") {
+        Write-Host "Downloading yt-dlp..."
 
-        # Check if FFmpeg succeeded
-        if ($ffmpegProcess.ExitCode -eq 0) {
-            Remove-Item -Path "$global:videoPath.bak" -Force  # Remove the .bak file
-            [System.Windows.Forms.MessageBox]::Show("Video downloaded and trimmed successfully!", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-        } else {
-            [System.Windows.Forms.MessageBox]::Show("Failed to trim the video.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        # Create the bin directory if it doesn't exist
+        if (-Not (Test-Path ".\bin")) {
+            New-Item -ItemType Directory -Path ".\bin" | Out-Null
         }
+
+        # URL to the latest yt-dlp.exe (official GitHub release)
+        $ytdlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+
+        # Download yt-dlp.exe to the bin directory
+        Invoke-WebRequest -Uri $ytdlpUrl -OutFile $ytdlpPath
+
+        Write-Host "yt-dlp has been downloaded to the bin directory."
     } else {
-        [System.Windows.Forms.MessageBox]::Show("FFmpeg not found!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        Write-Host "Download canceled. Exiting script."
+        Exit
     }
 } else {
-    [System.Windows.Forms.MessageBox]::Show("Failed to download video!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    Write-Host "yt-dlp is already present in the bin directory."
 }
 
-            } else {
-                [System.Windows.Forms.MessageBox]::Show("yt-dlp.exe not found in the script directory!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-            }
-        } else {
-            # If it's a local file path, copy the file to the video folder
-            if (Test-Path $userVideoInput) {
-                Copy-Item -Path $userVideoInput -Destination $destinationPath -Force
-                [System.Windows.Forms.MessageBox]::Show("File copied to video folder.", "Success", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-            } else {
-                [System.Windows.Forms.MessageBox]::Show("The specified file path is not valid!", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-            }
-        }
 
-        # Close the video form after updating
-        $videoForm.Close()
-    })
+
+    if (-Not (Test-Path $ytdlpPath)) {
+        [System.Windows.Forms.MessageBox]::Show("yt-dlp.exe is missing. Please ensure it is installed in the .\bin directory.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        return
+    }
+
+    # Define the selected game and search query
+    $selectedgame = "$global:selectedGame"  # Replace with the actual selected game
+    $searchQuery = "$selectedgame trailer"  # Create search query
+
+    # Search URL
+    $searchUrl = "ytsearch1:$searchQuery"
+
+    Write-Host "Search Query: $searchQuery"
+    Write-Host "Search URL: $searchUrl"
+
+    try {
+        # Run yt-dlp to search YouTube and get the result as JSON
+        $process = Start-Process -FilePath $ytdlpPath -ArgumentList "--flat-playlist", "-J", "`"$searchUrl`"" -RedirectStandardOutput "yt-dlp_output.json" -NoNewWindow -Wait -PassThru
+
+        # Check if the output file exists
+        if (Test-Path "yt-dlp_output.json") {
+            $resultJson = Get-Content -Path "yt-dlp_output.json" -Raw
+            $searchResults = $resultJson | ConvertFrom-Json
+
+            # Check if there are any results
+            if ($searchResults.entries.Count -gt 0) {
+                # Get the URL of the first result
+                $firstVideoUrl = $searchResults.entries[0].url
+                Write-Host "First Video URL: $firstVideoUrl"
+
+                # Set the URL in the text field
+                $textBoxVideo.Text = $firstVideoUrl
+
+                # Optionally trigger the text field to refresh visually
+                $textBoxVideo.Refresh()
+
+                # Also copy the URL to clipboard
+                Set-Clipboard -Value $firstVideoUrl
+                Write-Host "URL copied to clipboard."
+            } else {
+                [System.Windows.Forms.MessageBox]::Show("No results found for the trailer.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+
+            # Clean up the output file
+            Remove-Item -Path "yt-dlp_output.json" -Force
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("Failed to capture yt-dlp output.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        }
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("An error occurred while fetching the trailer.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
 
     # Define the Back button functionality
     $buttonBack.Add_Click({
