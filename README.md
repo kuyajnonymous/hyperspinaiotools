@@ -9,14 +9,13 @@
 - **Function**: Scrapes the logo and wheel images and auto-resizes them without any quality loss (avoiding stretching).
 
 ### 2. **Video Scraping**
-- **Manual**: Provide the address/URL/location of the video.
 - **Automatic**: Scrape videos using the **YT-DLP** tool by pressing the **Automatic** button.
+- **Manual**: Provide the address/URL/location of the video.
   - Downloads the video via **YT-DLP**.
   - Trims the first 5 seconds using **FFmpeg**.
 
 ### 3. **Update Button**
 When clicked, this button will:
-- Download and trim videos.
 - Check and create the following files if they are missing:
   - **PC Games.ini**: Adds entries if missing.
   - **PC Games.txt**: Adds entries if missing.
