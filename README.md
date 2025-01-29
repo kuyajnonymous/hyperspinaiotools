@@ -1,27 +1,39 @@
+# Hyperspin AI Tools
+
 ![Alt text](https://github.com/kuyajnonymous/hyperspinaiotools/raw/main/SS.png)
 
+## What's Working?
 
-Whats working?
-Logo/Wheel
-Scrapping logo and wheel in streamgriddb and autoresizing it without quality lost but stretching the image.
+### 1. **Logo/Wheel Scraping**
+- **Source**: StreamGridDB
+- **Function**: Scrapes the logo and wheel images and auto-resizes them without any quality loss (avoiding stretching).
 
-video scrapping 
-can be done manually, by placing address/url/location of the video
-can be scrapped automatically when, using yt-dlp (automatic button)
-Update button for video does the following
-download the vide using yt-dlp
-trim the first 5 seconds of the video using ffmpeg
+### 2. **Video Scraping**
+- **Manual**: Provide the address/URL/location of the video.
+- **Automatic**: Scrape videos using the **YT-DLP** tool by pressing the **Automatic** button.
+  - Downloads the video via **YT-DLP**.
+  - Trims the first 5 seconds using **FFmpeg**.
 
-What files are created. Generated when UPDATE Button is clicked
-PC Games.ini (it check for entry, add if missing)
-PC Games.txt (it check for entry, add if missing)
-CFG Files (creafe pc game default/standar cfg files, overwriting existing)
-Bat Files  (creafe pc game default/standar bat files, overwriting existing but making sure paths are correct for the game executables)
+### 3. **Update Button**
+When clicked, this button will:
+- Download and trim videos.
+- Check and create the following files if they are missing:
+  - **PC Games.ini**: Adds entries if missing.
+  - **PC Games.txt**: Adds entries if missing.
+  - **CFG Files**: Creates default PC game CFG files (overwrites existing ones).
+  - **BAT Files**: Creates default PC game BAT files, overwriting existing ones but ensuring paths are correct for game executables.
 
+---
 
-script was created tireless night, brainstorming ideas and functionalities with assitance from deepseek and chatgpt
-credits: 
-Mytch (maintindihin kung asawa)
-Shames (my better future)
-Kesyia (family protector)
-Jaime (the leader)
+## Credits
+
+This script was developed through countless brainstorming sessions and sleepless nights with help from:
+
+- **DeepSeek** (for assistance and ideas)
+- **ChatGPT** (for guidance and suggestions)
+
+### Special Mentions:
+- **Mytch**: (Maintaining balance at home)
+- **Shames**: (For a better future together)
+- **Kesyia**: (The protector of our family)
+- **Jaime**: (The leader)
