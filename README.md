@@ -24,6 +24,12 @@ When clicked, this button will:
 
 ---
 
+## Requirments
+PowerShell v5+ 
+SteamGridApi (Get it from streamgrid website)
+YT-DLP (will be downloaded when needed)
+FFMPEG (will be downloaded when needed)
+
 ## Credits
 
 This script was developed through countless brainstorming sessions and sleepless nights with help from:
@@ -32,7 +38,7 @@ This script was developed through countless brainstorming sessions and sleepless
 - **ChatGPT** (for guidance and suggestions)
 
 ### Special Mentions:
-- **Mytch**: (Maintaining balance at home)
-- **Shames**: (For a better future together)
-- **Kesyia**: (The protector of our family)
+- **Mytch**: (Perseverance)
+- **Shames**: (Better version of me)
+- **Kesyia**: (Protector of the Family)
 - **Jaime**: (The leader)
