@@ -9,7 +9,7 @@ Add-Type -AssemblyName WindowsFormsIntegration  # Needed for integrating WPF con
 # Create the main form
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Game Selector"
-$form.Size = New-Object System.Drawing.Size(500, 450)  # Increased height for new label section
+$form.Size = New-Object System.Drawing.Size(405, 450)  # Increased height for new label section
 $form.StartPosition = "CenterScreen"
 
 
@@ -47,6 +47,13 @@ $logoBox.Text = "Logo"
 $logoBox.Location = New-Object System.Drawing.Point(10, 100)
 $logoBox.Size = New-Object System.Drawing.Size(145, 210)
 $form.Controls.Add($logoBox)
+
+
+# Adjust existing elements to move below the new GroupBox
+$folderTextBox.Location = New-Object System.Drawing.Point(10, 75)
+$browseButton.Location = New-Object System.Drawing.Point(255, 73)
+$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 105)
+$addBox.Location = New-Object System.Drawing.Point(340, 73)
 
 $wheelBox = New-Object System.Windows.Forms.GroupBox
 $wheelBox.Text = "Wheel"
@@ -121,7 +128,7 @@ $form.Controls.Add($batLabel)
 # RocketLauncher label
 $rocketLauncherLabel = New-Object System.Windows.Forms.Label
 $rocketLauncherLabel.Text = "RocketLauncher"
-$rocketLauncherLabel.Location = New-Object System.Drawing.Point(450, 320)  # Positioned next to BAT
+#$rocketLauncherLabel.Location = New-Object System.Drawing.Point(40, 320)  # Positioned next to BAT
 $rocketLauncherLabel.Size = New-Object System.Drawing.Size(90, 20)
 $form.Controls.Add($rocketLauncherLabel)
 
@@ -153,7 +160,7 @@ $form.Width = 500  # Resize form if necessary to fit within 500px
 $hyperspinGroupBox = New-Object System.Windows.Forms.GroupBox
 $hyperspinGroupBox.Text = "Hyperspin Settings"
 $hyperspinGroupBox.Location = New-Object System.Drawing.Point(10, 10)  # Top of the form
-$hyperspinGroupBox.Size = New-Object System.Drawing.Size(480, 55)  # Adjusted width to fit form
+$hyperspinGroupBox.Size = New-Object System.Drawing.Size(400, 55)  # Adjusted width to fit form
 $form.Controls.Add($hyperspinGroupBox)
 
 
@@ -180,13 +187,6 @@ $hyperspinGroupBox.Controls.Add($collectionsDropdown)
 
 
 
-
-
-# Adjust existing elements to move below the new GroupBox
-$folderTextBox.Location = New-Object System.Drawing.Point(10, 75)
-$browseButton.Location = New-Object System.Drawing.Point(255, 73)
-$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 105)
-$addBox.Location = New-Object System.Drawing.Point(340, 73)
 
 $logoBox.Location = New-Object System.Drawing.Point(10, 135)
 $wheelBox.Location = New-Object System.Drawing.Point(160, 135)
@@ -1137,12 +1137,59 @@ $wheelPictureBox.Add_Click({
 
 $buttonScrap.Add_Click({
     # Validate API key
-    $apiKey = "03c3bdbbc7922e3e4c25936f4c4e7dcb"
+#    $apiKey = "03c3bdbbc7922e3e4c25936f4c4e7dcb"
+    # Check if the API key file exists
+    $apiKeyFile = Join-Path -Path (Get-Location) -ChildPath "api.key"
+    
+    # Validate API key
+    $apiKey = Get-Content -Path $apiKeyFile -ErrorAction SilentlyContinue
     if (-not $apiKey) {
-        [System.Windows.Forms.MessageBox]::Show("Please provide a valid SteamGridDB API key.", "API Key Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-        return
-    }
+        # Prompt for API key if not found
+        $form = New-Object System.Windows.Forms.Form
+        $form.Text = "Enter SteamGridDB API Key"
+        $form.Size = New-Object System.Drawing.Size(300, 150)
 
+        # Create a label to prompt the user
+        $label = New-Object System.Windows.Forms.Label
+        $label.Text = "Please enter your SteamGridDB API key:"
+        $label.AutoSize = $true
+        $label.Location = New-Object System.Drawing.Point(10, 20)
+        $form.Controls.Add($label)
+
+        # Create a textbox for the user to input the API key
+        $textbox = New-Object System.Windows.Forms.TextBox
+        $textbox.Size = New-Object System.Drawing.Size(250, 20)
+        $textbox.Location = New-Object System.Drawing.Point(10, 50)
+        $form.Controls.Add($textbox)
+
+        # Create an OK button to save the API key and close the form
+        $button = New-Object System.Windows.Forms.Button
+        $button.Text = "OK"
+        $button.Location = New-Object System.Drawing.Point(200, 80)
+        $button.Add_Click({
+            $apiKey = $textbox.Text
+            if (-not $apiKey) {
+                [System.Windows.Forms.MessageBox]::Show("Please provide a valid SteamGridDB API key.", "API Key Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            }
+            else {
+                # Save the API key to the api.key file
+                $apiKey | Out-File -FilePath $apiKeyFile -Force
+                # Close the form after saving
+                $form.Close()
+            }
+        })
+        $form.Controls.Add($button)
+
+        # Show the form
+        $form.ShowDialog()
+
+        # After the user has entered the key, reload it
+        $apiKey = Get-Content -Path $apiKeyFile
+        if (-not $apiKey) {
+            [System.Windows.Forms.MessageBox]::Show("API key is still missing or invalid.", "API Key Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            return
+        }
+    }
     # Get the selected game
     $selectedGame = $selectedGameDropdown.SelectedItem
     if (-not $selectedGame) {
