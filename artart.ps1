@@ -12,14 +12,12 @@ $form.Text = "Game Selector"
 $form.Size = New-Object System.Drawing.Size(405, 450)  # Increased height for new label section
 $form.StartPosition = "CenterScreen"
 
-
-
 # Create a text box for the game folder
 $folderTextBox = New-Object System.Windows.Forms.TextBox
 $folderTextBox.Location = New-Object System.Drawing.Point(10, 40)
-$folderTextBox.Size = New-Object System.Drawing.Size(240, 25)
+$folderTextBox.Size = New-Object System.Drawing.Size(200, 25)
 $form.Controls.Add($folderTextBox)
-
+$folderTextBox.Visible = $false
 
 # Create a button to browse for the game folder
 $browseButton = New-Object System.Windows.Forms.Button
@@ -31,14 +29,14 @@ $form.Controls.Add($browseButton)
 # Create a dropdown for selected game
 $selectedGameDropdown = New-Object System.Windows.Forms.ComboBox
 $selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 70)
-$selectedGameDropdown.Size = New-Object System.Drawing.Size(325, 21)
+$selectedGameDropdown.Size = New-Object System.Drawing.Size(200, 21)
 $form.Controls.Add($selectedGameDropdown)
 
 # Create the clickable box on the right of the TextBox and ComboBox rows
 $addBox = New-Object System.Windows.Forms.Button
 $addBox.Text = "ADD"
-$addBox.Location = New-Object System.Drawing.Point(340, 38)  # Right of the TextBox and Button
-$addBox.Size = New-Object System.Drawing.Size(70, 50)
+#$addBox.Location = New-Object System.Drawing.Point(340, 38)  # Right of the TextBox and Button
+$addBox.Size = New-Object System.Drawing.Size(100, 30)
 $form.Controls.Add($addBox)
 
 # Create boxes for logo, wheel, and video
@@ -48,12 +46,72 @@ $logoBox.Location = New-Object System.Drawing.Point(10, 100)
 $logoBox.Size = New-Object System.Drawing.Size(145, 210)
 $form.Controls.Add($logoBox)
 
-
 # Adjust existing elements to move below the new GroupBox
-$folderTextBox.Location = New-Object System.Drawing.Point(10, 75)
-$browseButton.Location = New-Object System.Drawing.Point(255, 73)
-$selectedGameDropdown.Location = New-Object System.Drawing.Point(10, 105)
-$addBox.Location = New-Object System.Drawing.Point(340, 73)
+$folderTextBox.Location = New-Object System.Drawing.Point(100, 75)
+$browseButton.Location = New-Object System.Drawing.Point(10, 73)
+$selectedGameDropdown.Location = New-Object System.Drawing.Point(100, 75)
+$addBox.Location = New-Object System.Drawing.Point(310, 73)
+
+
+
+# Create global variables
+$global_steamdir_path = $null
+$global_steam_user_data_path = $null
+
+# Function to browse for Steam folder and search for shortcuts.vdf
+function Browse-SteamDirectory {
+    # Show a folder browser dialog to select Steam directory
+    $steamDirDialog = New-Object System.Windows.Forms.FolderBrowserDialog
+    $steamDirDialog.Description = "Select your Steam installation folder"
+    
+    if ($steamDirDialog.ShowDialog() -eq "OK") {
+        # Set the selected Steam directory to $steamdir
+        $global:steamdir = $steamDirDialog.SelectedPath
+        Write-Host "Steam directory selected: $global:steamdir"
+        
+        # Now, search for shortcuts.vdf inside the userdata folder
+        $steamUserDataFolder = Join-Path $global:steamdir "userdata"
+        
+        if (Test-Path $steamUserDataFolder) {
+            $shortcutsFile = Get-ChildItem -Path $steamUserDataFolder -Recurse -Filter "shortcuts.vdf" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($shortcutsFile) {
+                # Set the directory containing shortcuts.vdf to $vdffolder
+                $global:vdffolder = $shortcutsFile.DirectoryName
+                Write-Host "Found shortcuts.vdf in: $global:vdffolder"
+            } else {
+                Write-Host "No shortcuts.vdf file found in the userdata folder."
+            }
+        } else {
+            Write-Host "userdata folder not found in the Steam directory."
+        }
+    } else {
+        Write-Host "Folder selection canceled."
+    }
+}
+
+# Create the CheckBox for "Add to Steam"
+$steam = New-Object System.Windows.Forms.CheckBox
+$steam.Location = New-Object System.Drawing.Point(320, 82)  # Original position of addBox
+$steam.Text = "Add to Steam"  # Set the label of the checkbox
+
+# Adjust the location to place the checkbox under the existing location
+$checkboxLocationY = $steam.Location.Y + $steam.Height + 5  # Add a small margin
+$steam.Location = New-Object System.Drawing.Point($steam.Location.X, $checkboxLocationY)
+
+# Add the checkbox to the form
+$form.Controls.Add($steam)
+
+# Event handler for checkbox click
+$steam.Add_CheckedChanged({
+    if ($steam.Checked) {
+        # Prompt to browse for Steam directory when checked
+        Write-Host "Checkbox checked, prompting for Steam directory..."
+        Browse-SteamDirectory
+    }
+})
+
+
+
 
 $wheelBox = New-Object System.Windows.Forms.GroupBox
 $wheelBox.Text = "Wheel"
@@ -124,13 +182,18 @@ $batLabel.Text = "BAT"
 $batLabel.Location = New-Object System.Drawing.Point(340, 320)  # Positioned next to XML
 $batLabel.Size = New-Object System.Drawing.Size(30, 20)
 $form.Controls.Add($batLabel)
-
 # RocketLauncher label
 $rocketLauncherLabel = New-Object System.Windows.Forms.Label
 $rocketLauncherLabel.Text = "RocketLauncher"
-#$rocketLauncherLabel.Location = New-Object System.Drawing.Point(40, 320)  # Positioned next to BAT
 $rocketLauncherLabel.Size = New-Object System.Drawing.Size(90, 20)
+
+# Add the click event to launch RocketLauncherUI.exe
+$rocketLauncherLabel.Add_Click({
+    Start-Process "$hyperspinlocation\RocketLauncher\RocketLauncherUI\RocketLauncherUI.exe"
+})
+
 $form.Controls.Add($rocketLauncherLabel)
+
 
 # Artworks label, starts as gray
 $artworksLabel = New-Object System.Windows.Forms.Label
@@ -225,7 +288,7 @@ $global:videoExists = $false
 $global:selectedGame = ""
 $global:selectedGameFolder = ""
 $global:emulatorFolder = ""
-$global:emulator = ""
+#$global:emulator = ""
 $global:logoPath = ""
 $global:wheelPath = ""
 $global:videoPath = ""
@@ -339,7 +402,7 @@ $selectedGameDropdown.Add_SelectedIndexChanged({
 
         # Get the parent folder (i.e., the emulator folder)
         $global:emulatorFolder = [System.IO.Directory]::GetParent($global:selectedGameFolder).FullName
-        $global:emulator = [System.IO.Path]::GetFileName($global:emulatorFolder)
+        #$global:emulator = [System.IO.Path]::GetFileName($global:emulatorFolder)
 
         # Update the emulator label
         Write-Host "Emulator: $global:emulator"
@@ -349,6 +412,7 @@ $selectedGameDropdown.Add_SelectedIndexChanged({
         $global:wheelPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\wheel\$global:selectedGame.png"
         $global:videoPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\videos\$global:selectedGame.mp4"
 		$global:batPath = Join-Path -Path $global:hyperspinLocation -ChildPath "collections\$global:emulator\roms\$global:selectedGame.bat"
+		
 
         # Show available artworks first (before checking $Emulator.txt)
         $global:logoExists = Test-Path $global:logoPath
@@ -490,7 +554,7 @@ $addBox.Add_Click({
         return
     }
 
-    if (-not $emulator) {
+    if (-not $global:emulator) {
         Write-Host "No emulator selected."
         [System.Windows.Forms.MessageBox]::Show("No emulator selected.", "Error", [System.Windows.Forms.MessageBoxButtons]::OK)
         return
@@ -523,61 +587,140 @@ $addBox.Add_Click({
     $exeFiles = Get-ChildItem -Path $searchPath -Recurse -Filter "*.exe" -File
     Write-Host "Found $($exeFiles.Count) .exe files."
 
-    if ($exeFiles.Count -gt 0) {
-        # Create the form
-        $form = New-Object System.Windows.Forms.Form
-        $form.Text = "Select Executable"
-        $form.Size = New-Object System.Drawing.Size(350, 350)
 
-        # Create the ListBox
-        $exeListBox = New-Object System.Windows.Forms.ListBox
-        $exeListBox.Location = New-Object System.Drawing.Point(20, 20)
-        $exeListBox.Size = New-Object System.Drawing.Size(300, 150)
 
-        foreach ($exe in $exeFiles) {
-            $exeListBox.Items.Add($exe.FullName)  # Add full path to ListBox
-            Write-Host "Added .exe to ListBox: $($exe.FullName)"
+
+
+
+
+
+
+if ($exeFiles.Count -gt 0) {
+    # Create the form
+    $form = New-Object System.Windows.Forms.Form
+    $form.Text = "Select Executable"
+    $form.Size = New-Object System.Drawing.Size(350, 350)
+
+    # Create the ListBox
+    $exeListBox = New-Object System.Windows.Forms.ListBox
+    $exeListBox.Location = New-Object System.Drawing.Point(20, 20)
+    $exeListBox.Size = New-Object System.Drawing.Size(500, 150)
+
+    # Create a Label to display the full path of the selected .exe
+    $pathLabel = New-Object System.Windows.Forms.Label
+    $pathLabel.Location = New-Object System.Drawing.Point(20, 180)
+    $pathLabel.Size = New-Object System.Drawing.Size(500, 30)
+    $pathLabel.Text = "Selected path will appear here."
+    $form.Controls.Add($pathLabel)
+
+    # Create an array to store file names and full paths
+    $exePaths = @{}
+
+    foreach ($exe in $exeFiles) {
+        # Add the file name to ListBox for display
+        $exeListBox.Items.Add($exe.Name)  # Display only the file name in ListBox
+        Write-Host "Added .exe to ListBox: $($exe.Name)"  # Show the name in console log
+
+        # Store the full path with the file name as key
+        $exePaths[$exe.Name] = $exe.FullName
+    }
+
+    # Add ListBox to form
+    $form.Controls.Add($exeListBox)
+
+    # Create OK Button
+    $okButton = New-Object System.Windows.Forms.Button
+    $okButton.Text = "OK"
+    $okButton.Location = New-Object System.Drawing.Point(20, 220)
+    $okButton.Size = New-Object System.Drawing.Size(75, 30)
+    $form.Controls.Add($okButton)
+
+    # Create Cancel Button
+    $cancelButton = New-Object System.Windows.Forms.Button
+    $cancelButton.Text = "Cancel"
+    $cancelButton.Location = New-Object System.Drawing.Point(110, 220)
+    $cancelButton.Size = New-Object System.Drawing.Size(75, 30)
+    $form.Controls.Add($cancelButton)
+
+    # Event handler for ListBox selection change
+    $exeListBox.Add_SelectedIndexChanged({
+        if ($exeListBox.SelectedItem) {
+            # Get the full path from $exePaths dictionary using the selected file name
+            $selectedExeFullPath = $exePaths[$exeListBox.SelectedItem]
+            
+            # Update the label with the full path
+            $pathLabel.Text = "Selected Path: $selectedExeFullPath"
         }
+    })
 
-        # Add ListBox to form
-        $form.Controls.Add($exeListBox)
+    # Event handler for OK button click
+    $okButton.Add_Click({
+        if ($exeListBox.SelectedItem) {
+            # Get the full path from $exePaths dictionary using the selected file name
+            $global:exenamefullpath = $exePaths[$exeListBox.SelectedItem]
+            $global:exename = $exeListBox.SelectedItem  # Only the file name (exe)
 
-        # Create OK Button
-        $okButton = New-Object System.Windows.Forms.Button
-        $okButton.Text = "OK"
-        $okButton.Location = New-Object System.Drawing.Point(20, 200)
-        $okButton.Size = New-Object System.Drawing.Size(75, 30)
-        $form.Controls.Add($okButton)
+            Write-Host "Selected EXE Full Path: $global:exenamefullpath"
+            Write-Host "Selected EXE Name: $global:exename"
 
-        # Create Cancel Button
-        $cancelButton = New-Object System.Windows.Forms.Button
-        $cancelButton.Text = "Cancel"
-        $cancelButton.Location = New-Object System.Drawing.Point(110, 200)
-        $cancelButton.Size = New-Object System.Drawing.Size(75, 30)
-        $form.Controls.Add($cancelButton)
+            # Optionally show the selected file in a message box
+            [System.Windows.Forms.MessageBox]::Show("Selected EXE: $global:exename", "EXE Selected", [System.Windows.Forms.MessageBoxButtons]::OK)
 
-        # Event handler for OK button click
-        $okButton.Add_Click({
-            if ($exeListBox.SelectedItem) {
-                $global:exenamefullpath = $exeListBox.SelectedItem  # Full path of selected .exe
-                $global:exename = [System.IO.Path]::GetFileName($exeListBox.SelectedItem)  # Only the file name (exe)
-                
-                Write-Host "Selected EXE Full Path: $global:exenamefullpath"
-                Write-Host "Selected EXE Name: $global:exename"
-                
-                [System.Windows.Forms.MessageBox]::Show("Selected EXE: $global:exename", "EXE Selected", [System.Windows.Forms.MessageBoxButtons]::OK)
-				
+
+
+
+
+
+# Define global variables
+$steam_user_data_path = "F:\Program Files (x86)\Steam\userdata\345901489\config"
+$game_installation_path = "D:\retrocade\collections\PC Games\roms\Contra Operation Galuga"
+$game_exe_path = "D:\retrocade\collections\PC Games\roms\Contra Operation Galuga\ContraOG.exe"
+$steamdir_path = "F:\Program Files (x86)\Steam"
+
+
+
+
+
+# Get the directory where the PowerShell script is located
+if ($MyInvocation.MyCommand.Path) {
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+} else {
+    # Fallback to the current working directory if $MyInvocation.MyCommand.Path is null
+    $scriptDir = $PWD.Path
+}
+
+# Path to the Python script (assuming it's in the same directory as this PowerShell script)
+$pythonScriptPath = Join-Path -Path $scriptDir -ChildPath "single1.py"
+
+
+# Run the Python script with the variables as arguments
+python $pythonScriptPath `
+    --steam_user_data_path "$global:vdffolder" `
+    --game_installation_path "$global:selectedGameFolder" `
+    --game_exe_path "$global:exenamefullpath" `
+    --steamdir_path "$global:steamdir"
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Create the batch file content
 $batFileContent = @"
 @echo off
 setlocal
-set "GAMENAME_URL=$global:foldername.url"
+set "GAMENAME_URL=$global:selectedGame.url"
 set "GAMENAME_EXE=$global:exename"
 set "GAMEPATH=$global:exenamefullpath"
-set "LOGFILE=$global:gamelog"
-set HOME="%~dp0"
-set "GAMEROOT=%~dp0%GAMEPATH%"
-set "GAMEDRIVE=$global:driveLetter"
+set "LOGFILE=%USERPROFILE%\Desktop\execution.log"
+set "HOME=%~dp0"
 
 rem Clear previous log or create a new one
 echo Script execution started. > "%LOGFILE%"
@@ -589,23 +732,22 @@ if exist "%USERPROFILE%\Desktop\%GAMENAME_URL%" (
     start "" /WAIT "%USERPROFILE%\Desktop\%GAMENAME_URL%"
     echo Successfully executed %GAMENAME_URL% from Desktop. >> "%LOGFILE%"
 ) else (
-    rem Check if the URL file exists in the specified game path
+    rem Check if the EXE file exists in the specified game path
     if exist "%GAMEPATH%" (
         echo Found %GAMENAME_EXE%. >> "%LOGFILE%"
         echo Running %GAMENAME_EXE%...
         start "" /WAIT "%GAMEPATH%"
         echo Successfully executed %GAMENAME_EXE%. >> "%LOGFILE%"
     ) else (
-        echo %GAMENAME_URL% not found. Proceeding to run the EXE file. >> "%LOGFILE%"
-        echo Running %GAMENAME_EXE%...
-        start "" /WAIT "%GAMEPATH%"
-        echo Successfully executed %GAMENAME_EXE%. >> "%LOGFILE%"
+        echo Neither %GAMENAME_URL% nor %GAMENAME_EXE% was found. >> "%LOGFILE%"
+        echo Error: Neither %GAMENAME_URL% nor %GAMENAME_EXE% was found.
+        exit /B 1
     )
 )
 
 echo Script execution finished. >> "%LOGFILE%"
 echo Logs written to %LOGFILE%.
-exit
+exit /B 0
 "@
 
 # Determine the path for the batch file
@@ -667,6 +809,58 @@ function Add-GameEntryIfNeeded {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Check both All Systems.txt and Emulator-specific txt files
 Add-GameEntryIfNeeded -filePath $allSystemsFilePath
 Add-GameEntryIfNeeded -filePath $emulatorFilePath
@@ -691,7 +885,7 @@ if ($sectionExists) {
         if (-not $endIndex) { $endIndex = $iniContent.Count - 1 } # If it's the last section, endIndex is the last line
 
         # Replace the first few lines in the section (you can adjust this based on your exact structure)
-        $iniContent[$startIndex + 1] = "Application=$global:exenamefullpath"
+        $iniContent[$startIndex + 1] = "Application=$batchFilePath"
         $iniContent[$startIndex + 2] = "AppWaitExe=$global:exename"
         $iniContent[$startIndex + 3] = "ExitMethod=Process Close AppWaitExe"
         $iniContent[$startIndex + 4] = "PostLaunchSleep=120000"
@@ -709,7 +903,7 @@ if ($sectionExists) {
     # If section does not exist, append the new section to the INI file
     $newSection = @"
 [$global:selectedGame]
-Application=$global:exenamefullpath
+Application=$batchFilePath
 AppWaitExe=$global:exename
 ExitMethod=Process Close AppWaitExe
 PostLaunchSleep=120000
@@ -775,6 +969,17 @@ args                 -s "[emulator]" -r "[name]" -p AttractMode -f "..\HyperSpin
         [System.Windows.Forms.MessageBox]::Show("No EXE files found!", "Search Result", [System.Windows.Forms.MessageBoxButtons]::OK)
     }
 })
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1136,60 +1341,13 @@ $wheelPictureBox.Add_Click({
 
 
 $buttonScrap.Add_Click({
-    # Validate API key
-#    $apiKey = "03c3bdbbc7922e3e4c25936f4c4e7dcb"
-    # Check if the API key file exists
-    $apiKeyFile = Join-Path -Path (Get-Location) -ChildPath "api.key"
-    
-    # Validate API key
-    $apiKey = Get-Content -Path $apiKeyFile -ErrorAction SilentlyContinue
+     # Validate API key
+    $apiKey = "03c3bdbbc7922e3e4c25936f4c4e7dcb"
     if (-not $apiKey) {
-        # Prompt for API key if not found
-        $form = New-Object System.Windows.Forms.Form
-        $form.Text = "Enter SteamGridDB API Key"
-        $form.Size = New-Object System.Drawing.Size(300, 150)
-
-        # Create a label to prompt the user
-        $label = New-Object System.Windows.Forms.Label
-        $label.Text = "Please enter your SteamGridDB API key:"
-        $label.AutoSize = $true
-        $label.Location = New-Object System.Drawing.Point(10, 20)
-        $form.Controls.Add($label)
-
-        # Create a textbox for the user to input the API key
-        $textbox = New-Object System.Windows.Forms.TextBox
-        $textbox.Size = New-Object System.Drawing.Size(250, 20)
-        $textbox.Location = New-Object System.Drawing.Point(10, 50)
-        $form.Controls.Add($textbox)
-
-        # Create an OK button to save the API key and close the form
-        $button = New-Object System.Windows.Forms.Button
-        $button.Text = "OK"
-        $button.Location = New-Object System.Drawing.Point(200, 80)
-        $button.Add_Click({
-            $apiKey = $textbox.Text
-            if (-not $apiKey) {
-                [System.Windows.Forms.MessageBox]::Show("Please provide a valid SteamGridDB API key.", "API Key Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-            }
-            else {
-                # Save the API key to the api.key file
-                $apiKey | Out-File -FilePath $apiKeyFile -Force
-                # Close the form after saving
-                $form.Close()
-            }
-        })
-        $form.Controls.Add($button)
-
-        # Show the form
-        $form.ShowDialog()
-
-        # After the user has entered the key, reload it
-        $apiKey = Get-Content -Path $apiKeyFile
-        if (-not $apiKey) {
-            [System.Windows.Forms.MessageBox]::Show("API key is still missing or invalid.", "API Key Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
-            return
-        }
+        [System.Windows.Forms.MessageBox]::Show("Please provide a valid SteamGridDB API key.", "API Key Missing", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        return
     }
+
     # Get the selected game
     $selectedGame = $selectedGameDropdown.SelectedItem
     if (-not $selectedGame) {
